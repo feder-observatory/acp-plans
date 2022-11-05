@@ -1,0 +1,15 @@
+
+;
+; Object NGC 7790
+;
+#autofocus
+#repeat 50
+#binning 1,1,1,1
+#filter B,V,rp,ip
+#interval 120,120,120,120
+#count 2,1,1,1
+NGC 7790	23:58:27.12	61:12:36
+
+#quitat 9/4/2022 05:30:00
+#chain TIC_435861696.txt
+

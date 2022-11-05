@@ -1,0 +1,8 @@
+; NGC 7380 (The Wizzard Nebula)
+#Autofocus
+#Filter B,V,Rc
+#Binning 1 
+#Count 3
+#Interval 90
+NGC 7380	22:47:21.0	58:07:54
+#shutdownat 08/26/22 09:30

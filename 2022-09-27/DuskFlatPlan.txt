@@ -1,0 +1,4 @@
+; open the dome
+#domeopen
+#duskflats DFlat.txt
+#chain calibration.txt

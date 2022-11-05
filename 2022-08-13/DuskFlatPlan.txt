@@ -1,0 +1,6 @@
+; open the dome
+#domeopen
+#chill -30
+#duskflats Flat.txt
+#chain calibration.txt
+

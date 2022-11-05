@@ -1,0 +1,6 @@
+; open the dome
+#domeopen
+
+#duskflats 2022-07-29-FlatPlan.txt
+#chain 2022-07-29-calibration.txt
+
