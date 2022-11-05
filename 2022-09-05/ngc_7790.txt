@@ -1,0 +1,16 @@
+
+;
+; Object NGC 7790
+;
+#autofocus
+#repeat 500
+#binning 1,1,1,1
+#filter B,V,rp,ip
+#interval 120,120,120,120
+#count 1,1,1,1
+NGC 7790	23:58:27.12	61:12:36
+
+#quitat 9/6/2022 09:50:00
+#chain DawnFlatPlan.txt
+
+

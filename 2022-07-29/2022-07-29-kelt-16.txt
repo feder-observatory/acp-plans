@@ -1,0 +1,10 @@
+#autofocus
+#REPEAT 999
+#FILTER ip,V,B
+#BINNING 1,1,1
+#INTERVAL 60,120,120
+#count 1,1,1
+; Exposure time roughly estimated based on target V = 15.2
+kelt-16	20:57:04.4386	31:39:39.63
+
+#shutdownat 07/30/2022 08:50

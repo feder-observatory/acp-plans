@@ -1,0 +1,89 @@
+;
+; Object M13
+;
+#autofocus
+#repeat 5
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M13	16:41:41.62992	36:27:40.7016
+
+;
+; Object M56
+;
+#autofocus
+#repeat 5
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M56	19:16:35.56992	30:11:00.4992
+
+;
+; Object M15
+;
+#autofocus
+#repeat 5
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M15	21:29:58.33008	12:10:01.2
+
+;
+; Object M27
+;
+#autofocus
+#repeat 5
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M27	19:59:36.36318501	22:43:16.31205955
+
+;
+; Object M31
+;
+#autofocus
+#repeat 5
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M31	0:42:44.3299992	41:16:07.5
+
+;
+; Object M33
+;
+#autofocus
+#repeat 5
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M33	1:33:50.89657492	30:39:36.63040313
+
+;
+; Object M74
+;
+#autofocus
+#repeat 5
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M74	1:36:41.74512366	15:47:01.1075123
+
+;
+; Object M34
+;
+#autofocus
+#repeat 5
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M34	2:42:07.44	42:43:19.2
+
+#shutdownat 8/31/2022 10:30:00

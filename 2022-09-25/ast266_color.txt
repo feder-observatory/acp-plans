@@ -1,0 +1,13 @@
+;
+; Object NGC-891
+;
+#domeopen
+#autofocus
+#repeat 50
+#binning 1
+#filter ip
+#interval 120
+#count 1
+NGC-891	2:22:33.41376	42:20:56.9256
+#quitat 10:30:00
+#chain calibration.txt

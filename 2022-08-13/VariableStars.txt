@@ -1,0 +1,10 @@
+;==NSV 10123==,==V0533 Her== Plans
+#Autofocus
+#Sets 90 
+#Filter ip
+#Binning 1
+#Count 3
+#Interval 90
+V0533 Her	18:14:20.51	41:51:22.6
+NSV 10123	18:03:05.10	36:00:39.0
+#shutdownat 08/14/22 04:00

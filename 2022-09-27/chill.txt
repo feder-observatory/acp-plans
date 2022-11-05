@@ -1,0 +1,12 @@
+; use waituntil if you are starting the plan early in the day. Chilling should start
+; about 40 minutes before sunset for dusk flats, or 40 minutes before the first images you want to take.
+
+; the time is in UTC
+;#waituntil 1, 23:00:00
+
+; Chill in stages so that the chilling doesn’t time out
+;#chill 10
+#chill -10
+#chill -30
+
+#chain DuskFlatPlan.txt

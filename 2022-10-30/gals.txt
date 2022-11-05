@@ -1,0 +1,23 @@
+;
+; Object M33
+;
+#autofocus
+#repeat 55
+#binning 1
+#filter ip
+#interval 120
+#count 1
+M33	1:33:50.89657492	30:39:36.63040313
+
+;
+; Object NGC-891
+;
+#autofocus
+#repeat 55
+#binning 1
+#filter ip
+#interval 120
+#count 1
+NGC-891	2:22:33.41376	42:20:56.9256
+#quitat 10/31/2022 05:00
+#chain TIC_357244603.txt

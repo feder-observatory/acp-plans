@@ -1,0 +1,5 @@
+; open the dome
+
+#dawnflats Flat.txt
+#shutdown
+

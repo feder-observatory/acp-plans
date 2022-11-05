@@ -1,0 +1,6 @@
+; open the dome
+#waituntil 1, 00:50:00
+#domeopen
+#chill -30
+#duskflats Flat.txt
+#chain calibration.txt

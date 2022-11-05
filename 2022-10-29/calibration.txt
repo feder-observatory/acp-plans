@@ -1,0 +1,25 @@
+;#domeclose
+
+;
+; === Target Bias (20@bin1) ===
+;
+
+#repeat 1
+#count 20
+#interval 0
+#binning 1
+#bias
+
+;
+; === Target Dark (20x120sec@bin1) ===
+;
+
+#repeat 1
+#count 20
+#interval 120
+#binning 1
+#dark
+
+#domeopen
+
+#chain TIC_742648307.txt
