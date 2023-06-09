@@ -1,0 +1,26 @@
+#domeclose
+
+;
+; === Target Dark (20x120sec@bin1) ===
+;
+
+#repeat 1
+#count 20
+#interval 120
+#binning 1
+#dark
+
+;
+; === Target Bias (20@bin1) ===
+;
+
+#repeat 1
+#count 20
+#interval 0
+#binning 1
+#bias
+
+
+#domeopen
+
+#chain DawnFlatPlan.txt

@@ -1,0 +1,4 @@
+#waituntil 1, 22:40
+#domeopen
+#duskflats DFlat.txt
+#chain calibration_dusk.txt

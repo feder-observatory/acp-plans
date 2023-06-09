@@ -1,0 +1,15 @@
+; TIC_81247877
+#autofocus
+#FILTER rp
+#BINNING 1
+#INTERVAL 90
+#count 1
+
+; Exposure time roughly estimated based on target V = 12.0
+; Uncomment 'waitairmass' if needed, but beware a bug that can
+; make it skip a target if used in afternoon / early evening.
+; #WAITAIRMASS 2.0, 300
+TIC_81247877	13:41:57.29	+17:18:00.24
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#quitAT 05/20/2023 08:00
+#chain m101-C.txt

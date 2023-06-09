@@ -1,0 +1,3 @@
+#domeopen
+#dawnflats DFlat.txt
+#shutdown
