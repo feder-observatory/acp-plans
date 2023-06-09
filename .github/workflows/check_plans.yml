@@ -36,4 +36,5 @@ jobs:
         for file in ${{ steps.new-folders.outputs.all_changed_files }}; do
           echo "$file was changed"
           python check_folder_names.py $file
+          python plan_check.py $file
         done
