@@ -25,4 +25,4 @@
 #dark
 
 #domeopen
-#chain m101-B.txt
+#chain m101B.txt
