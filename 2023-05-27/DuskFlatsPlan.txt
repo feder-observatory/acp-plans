@@ -1,0 +1,3 @@
+#domeopen
+#duskflats DFlat.txt
+#chain m101-A.txt

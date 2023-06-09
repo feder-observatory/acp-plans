@@ -1,0 +1,43 @@
+#chill -30
+
+#domeopen
+#duskflats DFlat.txt
+
+#domeclose
+;
+; === Target Bias (20@bin1) ===
+;
+
+#repeat 1
+#count 20
+#interval 0
+#binning 1
+#bias
+
+;
+; === Target Dark (20x120sec@bin1) ===
+;
+
+#repeat 1
+#count 20
+#interval 90
+#binning 1
+#dark
+
+#domeopen
+
+; ===== NGC 891 =====
+
+#autofocus
+#FILTER ip
+#BINNING 1
+#REPEAT 999
+
+; Exposure time roughly estimated based on target V = 12.4
+#INTERVAL 120
+; Uncomment 'waitairmass' if needed, but beware a bug that can
+; make it skip a target if used in afternoon / early evening.
+; #WAITAIRMASS 2.0, 300
+NGC891	2:22:32.90	+42:20:54
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#shutdownAT 01/26/2023 06:14

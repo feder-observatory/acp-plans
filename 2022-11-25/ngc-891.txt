@@ -1,0 +1,12 @@
+;
+; Object NGC-891
+;
+#autofocus
+#repeat 55
+#binning 1
+#filter ip
+#interval 120
+#count 1
+NGC-891	2:22:33.41376	42:20:56.9256
+#quitat 11/26/2022 01:25
+#chain TIC_34551972.01.txt

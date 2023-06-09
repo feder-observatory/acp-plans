@@ -1,0 +1,6 @@
+#chill 5
+#chill -10
+#chill -30
+#domeopen
+#duskflats DFlat.txt
+#chain calibration_dusk.txt
