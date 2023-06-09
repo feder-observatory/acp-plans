@@ -64,7 +64,11 @@ class PlanSetCheck:
 
     def __post_init__(self):
         self.all_plans = {p: PlanCheck(p) for p in self.folder.glob("*.txt")}
-        self.first_plan = [p for p in self.all_plans if p.stem.startswith("1")][0]
+        try:
+            self.first_plan = [p for p in self.all_plans if p.stem.startswith("1")][0]
+        except IndexError:
+            raise RuntimeError("No plan in the plan set starts with 1. The first plan "
+                               "should start with the number '1'.")
         self.plan_status = {p: PlanStatus() for p in self.all_plans}
 
     def check_plan_chains(self):
