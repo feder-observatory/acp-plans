@@ -12,6 +12,7 @@ class PlanStatus:
     chain_exists: bool = False
     is_flat: bool = False
     is_used: bool = False
+    calls_flat: bool = False
     flat_config_exists: bool = False
 
 
@@ -38,11 +39,19 @@ class PlanCheck:
         """Check whether the plan has a #shutdown command."""
         return self.plan_contents[-1].startswith("#shutdown")
 
+    def calls_flat(self):
+        """Check whether the plan calls a flat configuration file."""
+        return any([line.startswith("#duskflats") or line.startswith("#dawnflats")
+                    for line in self.plan_contents])
+
     def flats_config_file(self):
         """Check whether the plan uses a flats configuration file and returns that file name."""
         for line in self.plan_contents:
             if line.startswith("#duskflats") or line.startswith("#dawnflats"):
-                return line.split(" ")[1].strip()
+                try:
+                    return line.split(" ")[1].strip()
+                except IndexError:
+                    return False
         return None
 
 
@@ -69,10 +78,12 @@ class PlanSetCheck:
             self.plan_status[name].shuts_down = plan.has_shutdown()
             self.plan_status[name].is_flat = plan.is_flat_config()
 
-            if plan.flats_config_file():
-                self.plan_status[name].flat_config_exists = Path(self.folder / plan.flats_config_file()).exists()
-                if self.plan_status[name].flat_config_exists:
-                    self.plan_status[Path(self.folder / plan.flats_config_file())].is_used = True
+            if plan.calls_flat():
+                self.plan_status[name].calls_flat = True
+                if plan.flats_config_file():
+                    self.plan_status[name].flat_config_exists = Path(self.folder / plan.flats_config_file()).exists()
+                    if self.plan_status[name].flat_config_exists:
+                        self.plan_status[Path(self.folder / plan.flats_config_file())].is_used = True
 
             if self.plan_status[name].chains:
                 next_plan = Path(self.folder / plan.plan_contents[-1].split(" ")[1].strip())
@@ -86,16 +97,26 @@ class PlanSetCheck:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Check the validity of a plan set.")
-    parser.add_argument("folders", help="Folder containing the plan set")
+    parser.add_argument("folder", help="Folder containing the plan set")
     args = parser.parse_args()
 
     plan_set = PlanSetCheck(Path(args.folder))
     plan_set.check_plan_chains()
 
+    failed = False
+    errors = []
     for name, status in plan_set.plan_status.items():
         if not status.is_used:
-            print(f"Plan {name} is not used.")
+            errors.append(f"Plan {name} is not used.")
+            failed = True
         if status.chains and not status.chain_exists:
-            print(f"Plan {name} chains to a non-existent plan.")
-        if status.is_flat and not status.flat_config_exists:
-            print(f"Plan {name} uses a flats configuration file that does not exist.")
+            errors.append(f"Plan {name} chains to a non-existent plan.")
+            failed = True
+        if status.calls_flat and not status.flat_config_exists:
+            errors.append(f"Plan {name} calls a non-existent flat configuration file.")
+            failed = True
+
+    if failed:
+        raise RuntimeError("Plan set is not valid. The problems are:\n\t" + "\n\t".join(errors))
+    else:
+        print("Plan set is valid.")
