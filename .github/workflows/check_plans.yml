@@ -30,6 +30,7 @@ jobs:
         dir_names: "true"
         files_ignore: |
           *.py
+          .github/workflows/*.yml
     - name: Test with pytest
       run: |
         for file in ${{ steps.new-folders.outputs.all_changed_files }}; do
