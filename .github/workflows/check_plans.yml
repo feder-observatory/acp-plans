@@ -28,6 +28,8 @@ jobs:
       uses: tj-actions/changed-files@v36
       with:
         dir_names: "true"
+        files_ignore: |
+          *.py
     - name: Test with pytest
       run: |
         for file in ${{ steps.new-folders.outputs.all_changed_files }}; do
