@@ -1,0 +1,40 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Check ACP chaining
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+    - name: Check for changed files
+      id: new-folders
+      uses: tj-actions/changed-files@v36
+      with:
+        dir_names: "true"
+        files_ignore: |
+          *.py
+          .github/workflows/*.yml
+    - name: Test with pytest
+      run: |
+        for file in ${{ steps.new-folders.outputs.all_changed_files }}; do
+          echo "$file was changed"
+          python check_folder_names.py $file
+          python plan_check.py $file
+        done
