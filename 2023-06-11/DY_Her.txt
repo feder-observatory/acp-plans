@@ -1,13 +1,13 @@
-; TIC_81247877
+; DY Her
 #autofocus
 #repeat 999
 #FILTER rp
 #BINNING 1
-#INTERVAL 90
+#INTERVAL 60
 #count 1
 
 
-TIC_81247877	13:41:57.29	+17:18:00.24
+DY Her  16:31:17.95 +11:59:52.5
 ; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
-#quitAT 05/31/2023 07:45
+#quitAT 06/12/2023 07:21
 #chain m101-C.txt

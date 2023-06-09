@@ -1,6 +1,6 @@
-;#waituntil 0, 00:16:00
+#waituntil 0, 02:17:00
 
-;#chill 5
+#chill 5
 #chill -10
 #chill -20
 
@@ -25,4 +25,4 @@
 #dark
 
 #domeopen
-#chain m101-B.txt
+#chain DY_Her.txt
