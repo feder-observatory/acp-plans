@@ -1,4 +1,6 @@
 ; DY Her
+#waituntil 0, 04:00:00
+
 #autofocus
 #repeat 999
 #FILTER rp
