@@ -1,0 +1,13 @@
+; TIC_81247877
+#autofocus
+#repeat 999
+#FILTER rp
+#BINNING 1
+#INTERVAL 90
+#count 1
+
+
+TIC_81247877	13:41:57.29	+17:18:00.24
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#quitAT 06/14/2023 06:45
+#chain m101-C.txt
