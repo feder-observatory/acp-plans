@@ -11,5 +11,5 @@
 
 DY Her	16:31:17.95	+11:59:52.5
 ; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
-#quitAT 06206/2023 07:15
+#quitAT 06/20/2023 07:15
 #chain m101-C.txt
