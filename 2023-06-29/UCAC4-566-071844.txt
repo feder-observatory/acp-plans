@@ -1,0 +1,15 @@
+; UCAC4 566-071844
+#waituntil 0, 04:00:00
+
+#autofocus
+#repeat 999
+#FILTER rp
+#BINNING 1
+#INTERVAL 90
+#count 1
+
+
+UCAC4 566-071844	18:48:26.61	+23:09:04.1
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#QuitAT 06//30/2023 07:15
+#chain m101-C.txt
