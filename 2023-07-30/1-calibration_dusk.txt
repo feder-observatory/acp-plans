@@ -1,4 +1,5 @@
-#waituntil 0, 02:17:00
+;#waituntil 0, 02:17:00
+#waitfor 32400
 
 #chill 5
 #chill -10
