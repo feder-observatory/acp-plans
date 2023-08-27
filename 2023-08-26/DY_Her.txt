@@ -1,8 +1,7 @@
 ; DY Her
-#waituntil 0, 04:00:00
 
 #autofocus
-#repeat 999
+#repeat 60
 #FILTER rp
 #BINNING 1
 #INTERVAL 60
@@ -11,5 +10,4 @@
 
 DY Her	16:31:17.95	+11:59:52.5
 ; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
-#quitAT 08/27/2023 10:00
-#chain DawnFlatsPlan.txt
+#chain m101-A.txt

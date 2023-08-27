@@ -1,5 +1,8 @@
 ;#waituntil 0, 02:17:00
 
+#chill 5
+#chill -10
+#chill -20
 
 ;
 ; === Target Bias (20@bin1) ===
@@ -22,4 +25,4 @@
 #dark
 
 #domeopen
-#chain m101-A.txt
+#chain DY_Her.txt
