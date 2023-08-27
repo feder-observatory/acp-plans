@@ -1,0 +1,13 @@
+;UCAC4 566-071844
+
+#autofocus
+#repeat 15
+#FILTER rp,ip
+#BINNING 1,1
+#INTERVAL 90,90
+#count 1,1
+
+
+UCAC4 566-071844	18:48:26.61	+23:09:04.1
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#chain DY_Her.txt
