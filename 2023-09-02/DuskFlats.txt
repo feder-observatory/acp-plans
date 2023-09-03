@@ -1,0 +1,3 @@
+#waituntil 1, 01:00:00
+#duskflats DFlat.txt
+#shutdown
