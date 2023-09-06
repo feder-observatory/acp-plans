@@ -1,4 +1,4 @@
-#waituntil 1, 00:45:00
+#waituntil 1, 00:40:00
 #domeopen
 #duskflats DFlat.txt
 #chain ast266_color.txt
