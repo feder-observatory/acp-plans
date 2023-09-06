@@ -1,0 +1,113 @@
+# waituntil 1, 02:40:00
+;
+; Object Groth
+;
+#autofocus
+#repeat 5
+#binning 1
+#filter V
+#interval 120
+#count 1
+Groth	14:19:17.8	52:49:26.5
+
+;
+; Object M102
+;
+#autofocus
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M102	15:06:29.560992	55:45:47.90988
+
+;
+; Object M71
+;
+#autofocus
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M71	19:53:46.48992	18:46:45.0984
+
+;
+; Object M27
+;
+#autofocus
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M27	19:59:36.36318501	22:43:16.31205955
+
+;
+; Object M29
+;
+#autofocus
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M29	20:23:46.32	38:29:13.2
+
+;
+; Object M52
+;
+#autofocus
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M52	23:24:46.8	61:35:24
+
+;
+; Object M110
+;
+#autofocus
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M110	0:40:22.057235	41:41:07.50722014
+
+;
+; Object M74
+;
+#autofocus
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M74	1:36:41.74512366	15:47:01.1075123
+
+;
+; Object M76
+;
+#autofocus
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M76	1:42:19.65577282	51:34:31.53497005
+
+;
+; Object M45
+;
+#autofocus
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M45	3:46:24.24	24:06:50.4
+
+#quitat 09/07/2023 10:15:00
+#chain DawnFlats.txt
