@@ -1,0 +1,27 @@
+#waituntil 1, 00:50:00
+#chill 5
+#chill -10
+#chill -30
+
+;
+; === Target Bias (20@bin1) ===
+;
+
+#repeat 1
+#count 20
+#interval 0
+#binning 1
+#bias
+
+;
+; === Target Dark (20x120sec@bin1) ===
+;
+
+#repeat 1
+#count 20
+#interval 90
+#binning 1
+#dark
+
+#domeopen
+#chain ast266_color.txt
