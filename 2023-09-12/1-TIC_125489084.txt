@@ -6,7 +6,8 @@
 #REPEAT 999
 
 #FILTER rp,ip
-#BINNING 10,1
+#BINNING 1,1
+#count 10,1
 ; Exposure time roughly estimated based on target V = 14.2
 #INTERVAL 90,90
 ;
