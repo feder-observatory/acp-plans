@@ -1,0 +1,6 @@
+#waituntil 1, 02:00
+#chill -5
+#chill -30
+
+#domeopen
+#chain TIC_260040728.txt
