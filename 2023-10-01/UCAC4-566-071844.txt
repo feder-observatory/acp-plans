@@ -1,5 +1,5 @@
 ;UCAC4 566-071844
-
+#waituntil 1, 02:00
 #autofocus
 #repeat 99
 #FILTER rp,ip
