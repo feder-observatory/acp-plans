@@ -1,4 +1,4 @@
-#waituntil 1, 01:15
+;#waituntil 1, 01:15
 #autofocus
 
 ; ACP plan for target M101
