@@ -1,0 +1,10 @@
+#autofocus
+#REPEAT 999
+#FILTER rp
+#BINNING 1
+#INTERVAL 90
+#COUNT 1
+ey-uma	09:02:20.8	+49:49:09.3
+
+#quitat 11:00
+#chain DawnFlats.txt
