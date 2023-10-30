@@ -10,6 +10,7 @@
 
 ; Exposure time roughly estimated based on target V = 14.24
 #INTERVAL 120, 120
+#count 1, 1
 ; Uncomment 'waitairmass' if needed, but beware a bug that can
 ; make it skip a target if used in afternoon / early evening.
 ; #WAITAIRMASS 2.0, 300
