@@ -47,7 +47,7 @@ class PlanCheck:
     def flats_config_file(self):
         """Check whether the plan uses a flats configuration file and returns that file name."""
         for line in self.plan_contents:
-            if line.startswith("#duskflats") or line.startswith("#dawnflats") or line.startswith("#screenflats":
+            if line.startswith("#duskflats") or line.startswith("#dawnflats") or line.startswith("#screenflats"):
                 try:
                     return line.split(" ")[1].strip()
                 except IndexError:
