@@ -1,7 +1,7 @@
 ;
 ; === Target Bias (20@bin1) ===
 ;
-
+#waituntil 1, 22:50
 #repeat 1
 #count 20
 #interval 0
