@@ -1,0 +1,8 @@
+; This should force the dome to home and update the encoders.
+#domeclose
+
+; Open it back up now that we know where it is pointing
+#domeopen
+
+; Now do some real work
+#chain TIC_260040728.txt

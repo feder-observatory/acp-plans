@@ -1,0 +1,17 @@
+
+#autofocus
+
+; ACP plan for target NGC 891
+
+
+#repeat 500
+#FILTER V,B,rp
+#BINNING 1,1,1
+#COUNT 1,2,1
+
+#INTERVAL 120,120,120
+
+ngc-891	2:22:32.9	+42:20:54.0
+
+#quitat 06:30
+#chain StupidDomeTrick01.txt
