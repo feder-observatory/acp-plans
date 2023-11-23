@@ -1,0 +1,10 @@
+#autofocus
+#REPEAT 999
+#FILTER rp,ip
+#BINNING 1,1
+#INTERVAL 90,90
+#COUNT 10,1
+ey-uma	09:02:20.8	+49:49:09.3
+
+#quitat 11:50
+#chain ScreenFlats.txt
