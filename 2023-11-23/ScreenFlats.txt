@@ -1,0 +1,3 @@
+#domeclose
+#screenflats DFlat.txt
+#shutdown
