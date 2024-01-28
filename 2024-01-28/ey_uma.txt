@@ -1,3 +1,4 @@
+#waituntil 1, 01:00
 #domeopen
 #autofocus
 #REPEAT 999
