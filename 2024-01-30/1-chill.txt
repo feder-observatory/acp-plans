@@ -2,4 +2,4 @@
 #chill -5
 #chill -20
 #chill -30
-#chain ScreenFlats.txt
+#chain ey_uma.txt
