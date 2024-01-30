@@ -12,5 +12,5 @@
 ; #WAITAIRMASS 2.0, 300
 TIC_81247877	13:41:57.29	+17:18:00.24
 ; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
-#shutdownat 12:17
-
+#quitat 12:17
+#chain calibration-late.txt
