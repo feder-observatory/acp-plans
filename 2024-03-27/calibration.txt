@@ -1,14 +1,4 @@
 ;
-; === Target Dark (20x120sec@bin1) ===
-;
-
-#repeat 1
-#count 20
-#interval 90
-#binning 1
-#dark
-
-;
 ; === Target Bias (20@bin1) ===
 ;
 
@@ -17,5 +7,15 @@
 #interval 0
 #binning 1
 #bias
+
+;
+; === Target Dark (20x120sec@bin1) ===
+;
+
+#repeat 1
+#count 20
+#interval 90
+#binning 1
+#dark
 
 #chain ey_uma.txt
