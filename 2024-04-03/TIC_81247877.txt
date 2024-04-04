@@ -13,4 +13,4 @@
 TIC_81247877	13:41:57.29	+17:18:00.24
 ; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
 #quitat 10:30
-#chain ScreenFlats.txt
+#chain domecloses.txt
