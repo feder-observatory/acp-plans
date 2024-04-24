@@ -1,4 +1,5 @@
 ; TIC_81247877
+#waituntil 1, 02:45
 #autofocus
 #repeat 999
 #FILTER B,V,rp
