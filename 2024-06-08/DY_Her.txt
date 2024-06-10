@@ -4,9 +4,9 @@
 #autofocus
 #repeat 999
 #FILTER V,B,rp
-#BINNING 1,1
-#INTERVAL 60,90
-#count 18,2
+#BINNING 1,1,1
+#INTERVAL 60,90,60,
+#count 18,2,2
 
 
 DY Her	16:31:17.95	+11:59:52.5
