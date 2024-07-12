@@ -1,0 +1,14 @@
+; T Coronae Borealis
+
+#autofocus
+#repeat 999
+#FILTER V,B
+#BINNING 1,1
+#INTERVAL 60,90
+#count 3,3
+
+
+T CrB	15:59:30.16	+25:55:12.6
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#quitAT 8:00
+#chain calibration.txt
