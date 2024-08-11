@@ -1,0 +1,16 @@
+; T Coronae Borealis
+
+#waituntil 0, 03:15:00
+#domeopen
+#autofocus
+#repeat 999
+#FILTER V,B
+#BINNING 1,1
+#INTERVAL 60,90
+#count 3,3
+
+
+T CrB	15:59:30.16	+25:55:12.6
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#quitAT 5:50
+#chain m33.txt
