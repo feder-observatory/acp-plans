@@ -1,4 +1,4 @@
-#waituntil 1, 02:00
+;#waituntil 1, 02:00
 #chill 5
 #chill -5
 #chill -20
