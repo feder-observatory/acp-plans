@@ -1,0 +1,6 @@
+#waituntil 1, 01:44
+#chill 5
+#chill -5
+#chill -20
+
+#chain NGC7790.txt
