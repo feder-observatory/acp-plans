@@ -13,17 +13,6 @@
 M92	17:17:07.39008	43:08:09.3984
 
 ;
-; Object M27
-;
-#autofocus
-#repeat 8
-#binning 1,1,1
-#filter B,V,rp
-#interval 120,120,120
-#count 2,1,1
-M27	19:59:36.36318501	22:43:16.31205955
-
-;
 ; Object M103
 ;
 #autofocus
