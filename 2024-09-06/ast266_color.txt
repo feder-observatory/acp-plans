@@ -1,0 +1,73 @@
+#waituntil 1, 2:35
+#domeopen
+
+;
+; Object M92
+;
+#autofocus
+#repeat 5
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M92	17:17:07.39008	43:08:09.3984
+
+
+;
+; Object M31 -- pane1
+;
+#autofocus
+#repeat 8
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M31	0:41:45	40:43:05
+
+;
+; Object M31 -- pane3
+;
+#autofocus
+#repeat 8
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M31	0:43:444	41:46:10
+
+
+;
+; Object M33
+;
+#autofocus
+#repeat 3
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M33	1:33:50.89657492	30:39:36.63040313
+
+;
+; Object M74
+;
+#autofocus
+#repeat 8
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M74	1:36:41.74512366	15:47:01.1075123
+
+;
+; Object M45
+;
+#autofocus
+#repeat 32
+#binning 1,1,1
+#filter B,V,rp
+#interval 30,30,30
+#count 2,1,1
+M45	3:46:24.24	24:06:50.4
+
+#QUITAT 10:30
+#chain calibration.txt
