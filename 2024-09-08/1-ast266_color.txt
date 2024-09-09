@@ -1,0 +1,38 @@
+#waituntil 1, 2:50
+#domeopen
+
+;
+; Object M103
+;
+#autofocus
+#repeat 5
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M103	1:33:21.36	60:39:32.4
+
+;
+; Object M74
+;
+#autofocus
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M74	1:36:41.74512366	15:47:01.1075123
+
+;
+; Object M45
+;
+#autofocus
+#repeat 64
+#binning 1,1,1
+#filter B,V,rp
+#interval 30,30,30
+#count 2,1,1
+M45	3:46:24.24	24:06:50.4
+
+#QUITAT 10:30
+#chain calibration.txt
