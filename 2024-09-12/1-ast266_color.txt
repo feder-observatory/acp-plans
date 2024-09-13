@@ -1,0 +1,40 @@
+#waituntil 1, 2:30
+#domeopen
+
+#autofocus
+;
+;
+; === Target M57 ===
+;
+#repeat 8
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M57	18:53:35.08	+33:01:45.0
+
+;
+; Object M103
+;
+#autofocus
+#repeat 2
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M103	1:33:21.36	60:39:32.4
+
+
+;
+; Object M45
+;
+#autofocus
+#repeat 64
+#binning 1,1,1
+#filter B,V,rp
+#interval 30,30,30
+#count 2,1,1
+M45	3:45:46	24:10:42
+
+#QUITAT 10:30
+#chain calibration.txt
