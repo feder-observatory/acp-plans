@@ -3,6 +3,10 @@
 ; Transit is from 09/22/2024 04:19 to 09/22/2024 05:55 UTC.
 #waituntil 1, 02:00
 #autofocus
+
+; Try defocusing for a change...
+#defocus 50
+
 #FILTER rp
 #BINNING 1
 #REPEAT 999
