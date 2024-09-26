@@ -1,0 +1,13 @@
+;
+; Object M13
+;
+#domeopen
+#autofocus
+#repeat 64
+#binning 1,1,1
+#filter B,V,rp
+#interval 60,60,60
+#count 2,1,1
+M13	16:41:41.63	+36:27:40.8
+#quitat 3:30
+#chain calibration.txt
