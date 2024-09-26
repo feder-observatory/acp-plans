@@ -1,0 +1,12 @@
+;
+; Object M45
+;
+#autofocus
+#repeat 64
+#binning 1,1,1
+#filter B,V,rp
+#interval 30,30,30
+#count 2,1,1
+M45	3:46:24.24	24:25:50.4
+#quitat 10:30
+#chain calibration.txt
