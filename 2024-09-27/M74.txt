@@ -1,0 +1,12 @@
+;
+; Object M74
+;
+#autofocus
+#repeat 8
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M74	1:36:41.74512366	15:47:01.1075123
+#quitat 6:16
+#chain M45.txt
