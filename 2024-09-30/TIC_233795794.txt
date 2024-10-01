@@ -1,0 +1,15 @@
+;#waituntil 1, 1:45
+#domeopen
+#autofocus
+#defocus 50
+#FILTER rp
+#BINNING 1
+#REPEAT 999
+
+
+#INTERVAL 120
+
+TIC_233795794.01	20:13:26.65	+58:47:57.29
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#QUITAT 06:00
+#chain ngc891.txt
