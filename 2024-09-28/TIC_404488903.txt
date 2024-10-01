@@ -1,0 +1,17 @@
+#waituntil 1, 1:45
+#domeopen
+#autofocus
+
+#FILTER rp
+#BINNING 1
+#REPEAT 999
+
+; Exposure time roughly estimated based on target V = 14.05
+#INTERVAL 60
+; Uncomment 'waitairmass' if needed, but beware a bug that can
+; make it skip a target if used in afternoon / early evening.
+; #WAITAIRMASS 2.0, 300
+TIC_404488903.01	22:17:46.80	+15:43:32.39
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#QUITAT 09/29/2024 08:00
+#chain ngc891.txt

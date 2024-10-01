@@ -1,0 +1,6 @@
+#waituntil 1, 01:00
+#chill 5
+#chill -5
+#chill -20
+
+#chain TIC_404488903.txt
