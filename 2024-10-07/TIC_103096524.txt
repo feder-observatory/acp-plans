@@ -1,0 +1,18 @@
+
+#autofocus
+#defocus 50
+#FILTER gp,rp
+#BINNING 1,1
+#count 1,1
+#REPEAT 999
+
+
+#INTERVAL 120,120
+
+; Uncomment 'waitairmass' if needed, but beware a bug that can
+; make it skip a target if used in afternoon / early evening.
+; #WAITAIRMASS 2.0, 300
+TIC_103096524.01	04:04:13.21	+75:29:48.02
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#QUITAT 11:03
+#chain calibration.txt
