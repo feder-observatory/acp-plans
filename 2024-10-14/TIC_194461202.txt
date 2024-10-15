@@ -12,5 +12,5 @@
 
 TIC_194461202.01	00:16:22.77	+38:17:54.88
 ; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
-#QUITAT 11:00
+#QUITAT 10:40
 #chain calibration.txt
