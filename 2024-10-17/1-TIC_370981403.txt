@@ -1,0 +1,14 @@
+#domeopen
+#autofocus
+#REPEAT 999
+
+
+#FILTER rp,gp
+#BINNING 1,1
+#count 1,1
+#INTERVAL 120,120
+
+TIC_370981403.01	21:56:55.59	+53:49:35.58
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#QUITAT 07:23
+#chain calibration.txt
