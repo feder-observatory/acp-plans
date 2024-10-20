@@ -1,10 +1,11 @@
+#waituntil 1, 1:00
 #domeopen
 #autofocus
 #defocus 15
 #REPEAT 999
 
 
-#FILTER rp
+#FILTER gp
 #BINNING 1
 #count 1
 #INTERVAL 120
