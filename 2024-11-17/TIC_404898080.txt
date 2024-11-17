@@ -1,0 +1,12 @@
+;#waituntil 1, 23:25
+#domeopen
+#autofocus 
+#defocus 25
+#REPEAT 999
+; Exposure time roughly estimated based on target V = 13.88
+#INTERVAL 120
+
+TIC_404898080.01	21:35:08.06	+64:04:38.66
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#QUITAT 06:21
+#chain ey_uma.txt
