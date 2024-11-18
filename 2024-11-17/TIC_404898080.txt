@@ -3,6 +3,7 @@
 #autofocus 
 #defocus 25
 #REPEAT 999
+#filter rp
 ; Exposure time roughly estimated based on target V = 13.88
 #INTERVAL 120
 
