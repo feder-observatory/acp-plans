@@ -1,0 +1,5 @@
+#waituntil 1, 23:30
+#chill -5
+#chill -20
+#chill -30
+#chain ey_uma.txt
