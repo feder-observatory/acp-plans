@@ -1,0 +1,41 @@
+#waituntil 1, 08:30
+#READOUTMODE Monochrome
+#autofocus
+
+#FILTER rp
+#BINNING 1
+#INTERVAL 90
+#COUNT 10
+Melotte111	12:22:30.5	+25:50:42
+
+#defocus 5
+#FILTER rp
+#BINNING 1
+#INTERVAL 90
+#COUNT 10
+Melotte111	12:22:30.5	+25:50:42
+
+#defocus 10
+#FILTER rp
+#BINNING 1
+#INTERVAL 90
+#COUNT 10
+Melotte111	12:22:30.5	+25:50:42
+
+defocus 15
+#FILTER rp
+#BINNING 1
+#INTERVAL 90
+#COUNT 10
+Melotte111	12:22:30.5	+25:50:42
+
+defocus 20
+#FILTER rp
+#BINNING 1
+#INTERVAL 90
+#COUNT 10
+Melotte111	12:22:30.5	+25:50:42
+
+
+#quitat 11:25
+#chain calibration.txt

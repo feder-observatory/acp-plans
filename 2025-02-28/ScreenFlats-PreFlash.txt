@@ -1,0 +1,3 @@
+#READOUTMODE Monochrome (Preflash)
+#screenflats DFlat.txt
+#chain ScreenFlats.txt
