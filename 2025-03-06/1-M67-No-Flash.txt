@@ -1,0 +1,13 @@
+#waituntil 1, 1:45
+#domeopen
+#autofocus
+
+#REPEAT 999
+#FILTER B,V,rp,ip
+#BINNING 1,1,1,1
+#INTERVAL 90,90,90,90
+#COUNT 1,1,1,1
+M67	08:51:19.23	+11:47:54.1
+
+#quitat 4:25
+#chain M67-PreFlash.txt

@@ -1,0 +1,3 @@
+#READOUTMODE Monochrome
+#screenflats DFlat.txt
+#shutdown
