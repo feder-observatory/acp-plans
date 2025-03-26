@@ -1,0 +1,33 @@
+#waituntil 1, 1:45
+#domeopen
+#autofocus
+
+#sets 999
+
+
+#repeat 2
+#FILTER B,V,rp,ip
+#BINNING 1,1,1,1
+#INTERVAL 90,90,90,90
+#COUNT 1,1,20,1
+ey-uma	09:02:20.8	+49:49:09.3
+
+
+#repeat 3
+#FILTER V,rp
+#BINNING 1,1
+#INTERVAL 90,90
+#COUNT 1,1
+; This is Alina, Mag 14.4
+MP 00887
+
+#repeat 3
+#FILTER V,rp
+#BINNING 1,1
+#INTERVAL 120,120
+#COUNT 1,1
+; This is 1998 QH2, Mag 16.5
+MP 66008
+
+#quitat 9:45
+#chain calibration.txt
