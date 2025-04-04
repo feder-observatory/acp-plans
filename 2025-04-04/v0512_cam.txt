@@ -5,7 +5,7 @@
 #BINNING 1,1,1,1
 #INTERVAL 90,90,90,90
 #COUNT 1,1,20,1
-v0512 cam	10:1641.72	+84.32.05.6
+v0512 cam	10:16:41.72	+84.32.05.6
 
 #quitat 10:15
 #chain calibration.txt
