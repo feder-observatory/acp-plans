@@ -1,0 +1,14 @@
+
+;
+; Object M31
+;
+#autofocus
+#repeat 999
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M31	0:42:44.329992	41:16:07.5
+
+#quitat 6:10
+#chain m74.txt

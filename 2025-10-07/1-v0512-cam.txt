@@ -1,0 +1,12 @@
+#domeopen
+#autofocus
+
+#REPEAT 999
+#FILTER B,V,rp,ip
+#BINNING 1,1,1,1
+#INTERVAL 60,60,60,60
+#COUNT 1,20,1,1
+v0512 cam	10:16:41.72s	84:32:05.6
+
+#quitat 2:40
+#chain ast266_color.txt
