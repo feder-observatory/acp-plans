@@ -1,0 +1,14 @@
+#waituntil 1, 02:30
+#domeopen
+#autofocus
+;
+; Object M31 -- pane3
+;
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M31	0:43:444	41:46:10
+
+#chain m31_lots.txt

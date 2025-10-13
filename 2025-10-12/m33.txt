@@ -1,0 +1,13 @@
+;
+; Object M33
+;
+#autofocus
+#repeat 999
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M33	1:33:50.89657492	30:39:36.63040313
+
+#QUITAT 10:47
+#chain calibration.txt
