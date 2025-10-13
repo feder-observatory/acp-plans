@@ -1,0 +1,16 @@
+#waituntil 1, 0:44
+#chill -10
+#chill -20
+#chill -30
+#domeopen
+#autofocus
+
+#REPEAT 3
+#FILTER B,V,rp,ip
+#BINNING 1,1,1,1
+#INTERVAL 60,60,60,60
+#COUNT 1,1,1,1
+v0512 cam	10:16:41.72s	84:32:05.6
+
+#autofocus
+#chain ast266_color.txt
