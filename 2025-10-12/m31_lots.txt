@@ -1,0 +1,25 @@
+
+#sets 200
+;
+; Object M31 -- pane1
+;
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M31	0:41:45	40:43:05
+
+;
+; Object M31 -- pane3
+;
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M31	0:43:444	41:46:10
+
+
+#QUITAT 7:00
+#chain m33.txt
