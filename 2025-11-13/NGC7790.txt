@@ -7,13 +7,13 @@
 
 
 #repeat 500
-#FILTER rp,V,B,ip,540bp30
-#BINNING 1,1,1,1,1
-#COUNT 1,1,1,1,1
+#FILTER B,V,rp,ip,540bp30,540bp30,ip,rp,V,B
+#BINNING 1,1,1,1,1,1,1,1,1,1
+#COUNT 1,1,1,1,1,1,1,1,1,1
 
-#INTERVAL 120,120,120,120,1
+#INTERVAL 60,60,60,60,60,60,60,60,60,60
 
 NGC 7790	23:58:24.2	61:12:30
 
-#quitat 08:21
-#chain TIC_742648307.txt
+#quitat 08:00
+#chain ey_uma.txt
