@@ -9,7 +9,7 @@
 #FILTER rp
 #BINNING 1
 #REPEAT 999
-#AUTOGUIDE
+
 ; Exposure time roughly estimated based on target V = 13.71
 #INTERVAL 90
 ; Uncomment 'waitairmass' if needed, but beware a bug that can
