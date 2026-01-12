@@ -7,5 +7,5 @@
 #COUNT 1,1,20,1
 ey-uma	09:02:20.8	+49:49:09.3
 
-#quitat 6:40
-#chain TIC_238959233.txt
+#quitat 10:20
+#chain TIC_81247877.txt

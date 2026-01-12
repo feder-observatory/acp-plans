@@ -1,6 +1,6 @@
 ; TIC_81247877
-#waituntil 1, 04:30
-#domeopen
+;#waituntil 1, 04:30
+;#domeopen
 #autofocus
 #repeat 999
 #FILTER B,V,rp
@@ -14,6 +14,6 @@
 ; #WAITAIRMASS 2.0, 300
 TIC_81247877	13:41:57.29	+17:18:00.24
 ; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
-#quitat 12:20
+#quitat 12:25
 #chain calibration.txt
 

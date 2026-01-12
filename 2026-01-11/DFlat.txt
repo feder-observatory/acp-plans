@@ -3,6 +3,7 @@
 ; Lines are count,filter,binning (comma-separated)
 ; Empty filter uses ACP-configured clear filter
 ; ---------------------------------------------------
+10,540bp30,1
 10,ip,1
 10,rp,1
 10,V,1
