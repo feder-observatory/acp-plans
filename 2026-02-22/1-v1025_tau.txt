@@ -1,0 +1,11 @@
+#domeopen
+#autofocus
+
+#repeat 3
+#FILTER B,V,rp
+#BINNING 1,1,1
+#INTERVAL 60,90,90
+#COUNT 1,1,1
+v1025-tau	4:35:54.15	+22:54:13.4
+
+#chain fs_tau.txt
