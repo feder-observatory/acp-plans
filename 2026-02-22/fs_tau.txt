@@ -1,4 +1,4 @@
-#set 50
+#sets 50
 
 #REPEAT 3
 #FILTER B,V,rp
