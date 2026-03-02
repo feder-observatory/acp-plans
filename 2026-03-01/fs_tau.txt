@@ -15,4 +15,4 @@ fs-tau	4:22:02.18	+26:57:30.6
 v1025-tau	4:35:54.15	+22:54:13.4
 
 #quitat 4:30
-#chain ey_uma.txt
+#chain SN_2026efq.txt
