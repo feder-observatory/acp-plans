@@ -1,0 +1,11 @@
+#autofocus
+
+#REPEAT 999
+#FILTER B,V,gp,rp
+#BINNING 1,1,1,1
+#INTERVAL 120,120,120,120
+#COUNT 1,1,1,1
+SN2026efq	09:15:55.414	+10:08:09.33
+
+#quitat 8:00
+#chain ey_uma.txt
