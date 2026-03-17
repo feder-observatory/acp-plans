@@ -1,4 +1,4 @@
-;#waituntil 1, 03:00
+#waituntil 1, 01:45
 #domeopen
 #autofocus
 
