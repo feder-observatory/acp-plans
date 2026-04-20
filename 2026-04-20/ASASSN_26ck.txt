@@ -1,0 +1,19 @@
+; ASASSN_26ck
+#waituntil 1, 01:45
+#domeopen
+#autofocus
+#repeat 999
+#FILTER B,V,gp,rp,ip
+#BINNING 1,1,1,1,1
+#INTERVAL 120,120,120,120,120
+#count 1,1,1,1,1
+
+; Exposure time roughly estimated based on target V = 12.0
+; Uncomment 'waitairmass' if needed, but beware a bug that can
+; make it skip a target if used in afternoon / early evening.
+; #WAITAIRMASS 2.0, 300
+ASASSN_26ck	18:08:57.38	+76:48:23.6
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#quitat 10:00
+#chain calibration.txt
+

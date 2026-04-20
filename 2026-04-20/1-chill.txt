@@ -1,0 +1,5 @@
+#waituntil 1, 1:15
+#chill -5
+#chill -20
+#chill -30
+#chain ASASSN_26ck.txt
