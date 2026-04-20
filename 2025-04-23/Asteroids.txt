@@ -1,0 +1,34 @@
+#waituntil 1, 2:20
+#domeopen  
+
+#autofocus 
+
+#sets 999 
+
+#repeat 3 
+#FILTER V,rp  
+#BINNING 1,1 
+#INTERVAL 30,30  
+#COUNT 1,1 
+;This is 137170 
+MP D7170 
+
+
+#repeat 2  
+#FILTER B,V,rp,ip  
+#BINNING 1,1,1,1  
+#INTERVAL 90,90,90,90  
+#COUNT 3,3 
+;This is Alinda  
+MP 00887 
+
+#repeat 3 
+#FILTER V,rp  
+#BINNING 1,1  
+#INTERVAL 30,30  
+#COUNT 3,3  
+;This is Eric 
+MP 4954 
+
+#quitat 9:30
+#chain calibration.txt
