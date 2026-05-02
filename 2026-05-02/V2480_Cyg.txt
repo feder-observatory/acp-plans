@@ -1,7 +1,5 @@
 ; V2480 Cyg
 
-#waituntil 0, 03:15:00
-#domeopen
 #autofocus
 #repeat 999
 #FILTER V,B
