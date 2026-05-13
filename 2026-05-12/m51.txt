@@ -16,4 +16,4 @@
 
 M51	13:29:52.70	+47:11:42.9
 
-#chain m101-C.txt
+#chain v0709_and_v1716_cyg.txt
