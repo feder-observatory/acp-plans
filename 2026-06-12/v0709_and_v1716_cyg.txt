@@ -1,0 +1,20 @@
+; Two cygnus YSOs
+
+;#autofocus
+
+#sets 999
+
+#repeat 5
+#FILTER V,B,rp,ip
+#BINNING 1,1,1,1
+#INTERVAL 120,120,120,120
+#count 1,1,1,1
+V0709 Cyg	21:44:59.40	+54:22:54.2
+
+#repeat 5
+#INTERVAL 90,90,60,60
+V1716 Cyg	20:58:06.12	+43:53:01.1
+
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#quitAT 7:30
+#chain ci_aql.txt

@@ -1,0 +1,16 @@
+; Recurrent nova CI Aql
+
+;#autofocus
+
+
+#repeat 50
+#FILTER V,B,rp,ip
+#BINNING 1,1,1,1
+#INTERVAL 120,120,120,120
+#count 1,1,1,1
+CI Aql	18:52:03	-1:28:39.2
+
+
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#quitAT 8:15
+#chain calibration.txt
