@@ -1,0 +1,5 @@
+;#waituntil 1, 2:45
+#chill 5
+#chill -10
+#chill -20
+#chain ngc6946.txt
