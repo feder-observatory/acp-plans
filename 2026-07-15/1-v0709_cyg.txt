@@ -1,4 +1,5 @@
 ; One cygnus YSOs
+#waituntil 1, 4:30
 #domeopen
 #autofocus
 
