@@ -1,0 +1,17 @@
+; One cygnus YSOs
+#waituntil 1, 4:30
+#domeopen
+#autofocus
+
+#sets 999
+
+
+#FILTER V,B,rp,ip
+#BINNING 1,1,1,1
+#INTERVAL 120,120,120,120
+#count 1,1,1,1
+V0709 Cyg	21:44:59.40	+54:22:54.2
+
+; Quit time is in UTC, and was based on alt/HA/daylight/baseline constraints. Edit as needed.
+#quitAT 8:20
+#chain calibration.txt
