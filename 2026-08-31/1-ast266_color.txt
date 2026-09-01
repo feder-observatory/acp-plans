@@ -1,0 +1,49 @@
+;
+; Object M27
+;
+#waituntil 1, 2:45
+#domeopen
+
+#autofocus
+#repeat 8
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M27	19:59:36.36318501	22:43:16.31205955
+
+;
+; Object M76
+;
+#autofocus
+#repeat 10
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M76	1:42:19.65577282	51:34:31.53497005
+
+;
+; Object M33
+;
+#autofocus
+#repeat 10
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M33	1:33:50.89657492	30:39:36.63040313
+
+;
+; Object M45
+;
+#autofocus
+#repeat 30
+#binning 1,1,1
+#filter B,V,rp
+#interval 30,30,30
+#count 2,1,1
+M45	3:49:10	24:03:10
+
+#quitat 10:00
+#chain calibration.txt
