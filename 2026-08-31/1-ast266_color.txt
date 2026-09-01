@@ -43,7 +43,7 @@ M33	1:33:50.89657492	30:39:36.63040313
 #filter B,V,rp
 #interval 30,30,30
 #count 2,1,1
-M45	3:46:24.24	24:06:50.4
+M45	3:49:10	24:03:10
 
 #quitat 10:00
 #chain calibration.txt
