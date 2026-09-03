@@ -1,0 +1,60 @@
+#waituntil 1, 2:45
+#domeopen
+
+;
+; Object M29
+;
+#autofocus
+#repeat 10
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M29	20:23:46.32	38:29:13.2
+
+;
+; Object M27
+;
+#autofocus
+#repeat 4
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M27	19:59:36.36318501	22:43:16.31205955
+
+;
+; Object NGC 7331
+;
+#autofocus
+#repeat 10
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+NGC 7331	22:37:04.0506048	34:24:56.80008
+
+;
+; Object M33
+;
+#autofocus
+#repeat 10
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M33	1:33:50.89657492	30:39:36.63040313
+
+;
+; Object M45
+;
+#autofocus
+#repeat 30
+#binning 1,1,1
+#filter B,V,rp
+#interval 30,30,30
+#count 2,1,1
+M45	3:49:10	24:03:10
+
+#quitat 10:00
+#chain calibration.txt
