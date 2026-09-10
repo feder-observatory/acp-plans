@@ -1,0 +1,39 @@
+;#waituntil 1, 2:30
+#domeopen
+
+
+;
+; Object NGC 6888
+;
+#autofocus
+#repeat 15
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+NGC6888	20:12:06.54	38:21:17.8
+
+;
+; Object M76
+;
+#autofocus
+#repeat 10
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+M76	1:42:19.65577282	51:34:31.53497005
+
+;
+; Object M45
+;
+#autofocus
+#repeat 500
+#binning 1,1,1
+#filter B,V,rp
+#interval 30,30,30
+#count 2,1,1
+M45	3:49:10	24:03:10
+
+#quitat 10:15
+#chain calibration.txt
