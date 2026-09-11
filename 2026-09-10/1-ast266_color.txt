@@ -1,0 +1,19 @@
+;#waituntil 1, 2:30
+#domeopen
+
+
+
+;
+; Object NGC 7331
+;
+#autofocus
+#repeat 999
+#binning 1,1,1,1
+#filter B,V,rp,ip
+#interval 120,120,120,120
+#count 2,1,1,1
+NGC7331	22:37:04.0506048	34:24:56.80008
+
+
+#quitat 6:00
+#chain calibration.txt
