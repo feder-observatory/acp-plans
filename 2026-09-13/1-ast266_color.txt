@@ -1,0 +1,31 @@
+;#waituntil 1, 2:30
+#chill -5
+#chill -20
+
+#domeopen
+
+;
+; Object NGC 6888
+;
+#autofocus
+#repeat 10
+#binning 1,1,1
+#filter B,V,rp
+#interval 120,120,120
+#count 2,1,1
+NGC6888	20:12:06.54	38:21:17.8
+
+;
+; Object NGC 7331
+;
+#autofocus
+#repeat 999
+#binning 1,1,1,1
+#filter B,V,rp,ip
+#interval 120,120,120,120
+#count 2,1,1,1
+NGC7331	22:37:04.0506048	34:24:56.80008
+
+
+#quitat 8:00
+#chain calibration.txt
