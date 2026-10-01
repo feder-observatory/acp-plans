@@ -1,0 +1,72 @@
+
+#domeopen
+
+;
+; Object M57
+;
+#autofocus
+#repeat 10
+#binning 1
+#filter 540bp30
+#interval 120
+#count 1
+M57	18:53:35.09676591	33:01:44.88328754
+
+;
+; Object NGC 6888
+;
+#autofocus
+#repeat 10
+#binning 1
+#filter 540bp30
+#interval 120
+#count 1
+NGC 6888	20:12:06.5232	38:21:16.8156
+
+;
+; Object M27
+;
+#autofocus
+#repeat 10
+#binning 1
+#filter 540bp30
+#interval 120
+#count 1
+M27	19:59:36.36318501	22:43:16.31205955
+
+;
+; Object M29
+;
+#autofocus
+#repeat 10
+#binning 1
+#filter 540bp30
+#interval 120
+#count 1
+M29	20:23:46.32	38:29:13.2
+
+;
+; Object M39
+;
+#autofocus
+#repeat 10
+#binning 1
+#filter 540bp30
+#interval 120
+#count 1
+M39	21:31:33.4000008	48:14:48.999984
+
+;
+; Object NGC 7331
+;
+#autofocus
+#repeat 100
+#binning 1,1,1,1,1
+#filter B,V,rp,ip,540bp30
+#interval 120,120,120,120,120
+#count 2,1,1,1,1
+NGC 7331	22:37:04.0506048	34:24:56.80008
+
+
+#quitat 8:30
+#chain ast266_color_batch2.txt
