@@ -1,0 +1,46 @@
+;
+; Object M31
+;
+#autofocus
+#repeat 10
+#binning 1
+#filter 540bp30
+#interval 120
+#count 1
+M31	0:42:44.3299992	41:16:07.5
+
+;
+; Object M33
+;
+#autofocus
+#repeat 20
+#binning 1,1,1,1
+#filter B,V,rp,540bp30
+#interval 240,240,240,240
+#count 2,1,1,1
+M33	1:33:50.89657492	30:39:36.63040313
+
+;
+; Object M76
+;
+#autofocus
+#repeat 10
+#binning 1
+#filter 540bp30
+#interval 120
+#count 1
+M76	1:42:19.65577282	51:34:31.53497005
+
+;
+; Object M45
+;
+#autofocus
+#repeat 10
+#binning 1
+#filter 540bp30
+#interval 120
+#count 1
+M45	3:46:24.24	24:06:50.4
+
+#quitat 10:30
+#chain calibration.txt
