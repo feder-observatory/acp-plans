@@ -1,0 +1,24 @@
+;
+; Object M31
+;
+#autofocus
+#repeat 10
+#binning 1,1,1,1
+#filter B,V,rp,540bp30
+#interval 240,240,240,240
+#count 2,1,1,1
+M31	0:42:44.3299992	41:16:07.5
+
+;
+; Object M33
+;
+#autofocus
+#repeat 20
+#binning 1,1,1,1
+#filter B,V,rp,540bp30
+#interval 240,240,240,240
+#count 2,1,1,1
+M33	1:33:50.89657492	30:39:36.63040313
+
+#quitat 10:40
+#chain calibration.txt
