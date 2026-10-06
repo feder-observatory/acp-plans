@@ -1,0 +1,14 @@
+
+;
+; Object M33
+;
+#autofocus
+#repeat 200
+#binning 1,1,1,1
+#filter B,V,rp,540bp30
+#interval 240,240,240,240
+#count 2,1,1,1
+M33	1:33:50.89657492	30:39:36.63040313
+
+#quitat 5:15
+#chain TIC_436843539.txt
