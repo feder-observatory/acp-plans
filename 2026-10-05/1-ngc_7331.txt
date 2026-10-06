@@ -1,6 +1,8 @@
 ;
 ; Object NGC 7331
 ;
+#chill -30
+#domeopen
 #autofocus
 #repeat 999
 #binning 1,1,1,1
