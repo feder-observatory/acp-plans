@@ -509,6 +509,7 @@ def check_target(name, coord, catalogs):
 # ---------------------------------------------------------------- findings and folders
 
 NOT_PLAN_FOLDERS = {"tests"}
+NOT_PLAN_FILES = {"requirements.txt"}      # .txt files at the repo root that are not plans
 
 
 @dataclass
@@ -565,7 +566,7 @@ def classify_changed_paths(paths):
         parts = path.split("/")
         top = parts[0]
         if len(parts) == 1:
-            if is_plan_file_name(path):
+            if is_plan_file_name(path) and path not in NOT_PLAN_FILES:
                 changes.findings.append(Finding(
                     "error", path, 0,
                     f"`{path}` is a plan file at the top of the repository. Plan files must "

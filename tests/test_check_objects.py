@@ -1849,3 +1849,8 @@ def test_unreachable_with_a_mismatch_leads_with_the_offset():
     assert f.message.startswith("`ey-uma` is 3.2 arcmin from the catalog position")
     assert "Sesame at CDS: TimeoutError: timed out" in f.message
     assert "Re-run jobs" in f.message
+
+
+def test_requirements_txt_at_the_root_is_not_a_plan_file():
+    changes = co.classify_changed_paths(["requirements.txt", "ey_uma.txt"])
+    assert [f.path for f in changes.findings] == ["ey_uma.txt"]
