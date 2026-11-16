@@ -1,7 +1,13 @@
-# Check the folder name and the plan chaining of every top-level plan folder
-# changed by a push or pull request.
+# Check the plan folders changed by a push or pull request: folder names,
+# plan chaining, plan line format and target coordinates against catalogs.
+# check_objects.py decides what there is to check and writes the report to the
+# job summary.
+#
+# The check-plans job always runs (no path filters, no "if:"), so it can be a
+# required status check on main. The unit tests are a separate job so that a
+# PyPI outage while installing pytest cannot block the required check.
 
-name: Check ACP chaining
+name: Check ACP plans
 
 on:
   push:
@@ -13,14 +19,14 @@ permissions:
   contents: read
 
 jobs:
-  build:
-
+  check-plans:
+    name: check-plans
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v7
       with:
-        # Full history, so the base commit is available to git diff.
+        # Full history, so the base commit is available to git.
         fetch-depth: 0
     - name: Set up Python 3.11
       uses: actions/setup-python@v7
@@ -46,47 +52,19 @@ jobs:
           base="HEAD~1"
         fi
 
-        # Collect the distinct top-level folders touched by the change.
-        # NUL-delimited so that any character in a name is safe.
-        changed=$(mktemp)
-        if ! git diff --name-only -z "$base" HEAD -- > "$changed"; then
-          echo "git diff against '$base' failed."
-          exit 1
-        fi
-        folders=()
-        while IFS= read -r -d '' path; do
-          case "$path" in
-            */*) top="${path%%/*}" ;;
-            *) continue ;;  # file at the repo root: not a plan folder
-          esac
-          case "$top" in
-            .github|tests) continue ;;
-          esac
-          seen=0
-          for f in ${folders[@]+"${folders[@]}"}; do
-            if [ "$f" = "$top" ]; then seen=1; break; fi
-          done
-          [ "$seen" -eq 1 ] || folders+=("$top")
-        done < "$changed"
+        python check_objects.py --base "$base"
 
-        failed=()
-        for folder in ${folders[@]+"${folders[@]}"}; do
-          if [ ! -d "$folder" ]; then
-            printf 'Skipping deleted folder: %s\n' "$folder"
-            continue
-          fi
-          printf 'Checking %s\n' "$folder"
-          ok=1
-          python check_folder_names.py -- "$folder" || ok=0
-          python plan_check.py -- "$folder" || ok=0
-          [ "$ok" -eq 1 ] || failed+=("$folder")
-        done
+  unit-tests:
+    name: unit-tests
+    runs-on: ubuntu-latest
 
-        if [ "${#folders[@]}" -eq 0 ]; then
-          echo "No plan folders changed."
-        fi
-        if [ "${#failed[@]}" -gt 0 ]; then
-          echo "Checks failed for:"
-          printf '  %s\n' "${failed[@]}"
-          exit 1
-        fi
+    steps:
+    - uses: actions/checkout@v7
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v7
+      with:
+        python-version: "3.11"
+    - name: Install pytest
+      run: python -m pip install pytest
+    - name: Run the tests
+      run: python -m pytest tests/

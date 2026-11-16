@@ -1,0 +1,18 @@
+# Run the plan check on staged changes before each commit.
+# Setup: pre-commit install   (needs pre-commit and uv on PATH)
+#
+# check_objects.py needs Python 3.10 or newer; uv runs it with Python 3.11,
+# the version the GitHub workflow uses, downloading it once if needed.
+# --offline-ok: an unreachable catalog service is a warning here, not an error.
+repos:
+  - repo: local
+    hooks:
+      - id: check-plans
+        name: check ACP plans
+        entry: uv run --no-project --python 3.11 python check_objects.py --staged --offline-ok
+        language: system
+        pass_filenames: false
+        always_run: true
+        # Show the report even when the hook passes, so warnings (such as a
+        # catalog that could not be reached) are seen.
+        verbose: true
