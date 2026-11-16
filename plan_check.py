@@ -14,6 +14,15 @@ class PlanStatus:
     is_used: bool = False
     calls_flat: bool = False
     flat_config_exists: bool = False
+    chain_name_missing: bool = False
+
+
+FLAT_DIRECTIVES = ("#duskflats", "#dawnflats", "#screenflats")
+
+
+def has_directive(line, directives):
+    """Whether a plan line starts with one of the directives; ACP accepts any letter case."""
+    return line.lower().startswith(directives)
 
 
 @dataclass
@@ -22,7 +31,7 @@ class PlanCheck:
     plan_contents: list[str] = None
 
     def __post_init__(self):
-        with open(self.plan_path, "r") as f:
+        with open(self.plan_path, "r", encoding="utf-8-sig") as f:
             self.plan_contents = f.readlines()
         self.plan_contents = [line for line in self.plan_contents if line.strip() and not line.startswith(";")]
 
@@ -31,27 +40,33 @@ class PlanCheck:
         flat_line = re.compile(r"\d+,\w+,\d+")
         return all(flat_line.match(line) for line in self.plan_contents)
 
+    def is_empty(self):
+        """Check whether the plan has no lines other than comments and blank lines."""
+        return not self.plan_contents
+
     def chains(self):
         """Check whether the plan chains to another plan."""
-        return self.plan_contents[-1].startswith("#chain")
+        return not self.is_empty() and has_directive(self.plan_contents[-1], "#chain")
+
+    def chain_target(self):
+        """The file name after the final #chain, or None if there is none."""
+        words = self.plan_contents[-1].split()
+        return words[1] if len(words) > 1 else None
 
     def has_shutdown(self):
         """Check whether the plan has a #shutdown command."""
-        return self.plan_contents[-1].startswith("#shutdown")
+        return not self.is_empty() and has_directive(self.plan_contents[-1], "#shutdown")
 
     def calls_flat(self):
         """Check whether the plan calls a flat configuration file."""
-        return any([line.startswith("#duskflats") or line.startswith("#dawnflats") or line.startswith("#screenflats")
-                    for line in self.plan_contents])
+        return any(has_directive(line, FLAT_DIRECTIVES) for line in self.plan_contents)
 
     def flats_config_file(self):
         """Check whether the plan uses a flats configuration file and returns that file name."""
         for line in self.plan_contents:
-            if line.startswith("#duskflats") or line.startswith("#dawnflats") or line.startswith("#screenflats"):
-                try:
-                    return line.split(" ")[1].strip()
-                except IndexError:
-                    return False
+            if has_directive(line, FLAT_DIRECTIVES):
+                words = line.split()
+                return words[1] if len(words) > 1 else False
         return None
 
 
@@ -63,7 +78,10 @@ class PlanSetCheck:
     plan_status: dict[Path, PlanStatus] = None
 
     def __post_init__(self):
-        self.all_plans = {p: PlanCheck(p) for p in self.folder.glob("*.txt")}
+        # Only regular files: symlinks are never followed and folders never opened.
+        self.all_plans = {p: PlanCheck(p) for p in sorted(self.folder.iterdir())
+                          if p.name.lower().endswith(".txt")
+                          and p.is_file() and not p.is_symlink()}
         try:
             self.first_plan = [p for p in self.all_plans if p.stem.startswith("1")][0]
         except IndexError:
@@ -85,18 +103,45 @@ class PlanSetCheck:
             if plan.calls_flat():
                 self.plan_status[name].calls_flat = True
                 if plan.flats_config_file():
-                    self.plan_status[name].flat_config_exists = Path(self.folder / plan.flats_config_file()).exists()
-                    if self.plan_status[name].flat_config_exists:
-                        self.plan_status[Path(self.folder / plan.flats_config_file())].is_used = True
+                    flat_config = Path(self.folder / plan.flats_config_file())
+                    self.plan_status[name].flat_config_exists = flat_config.exists()
+                    if self.plan_status[name].flat_config_exists and flat_config in self.plan_status:
+                        self.plan_status[flat_config].is_used = True
 
-            if self.plan_status[name].chains:
-                next_plan = Path(self.folder / plan.plan_contents[-1].split(" ")[1].strip())
+            if self.plan_status[name].chains and plan.chain_target() is None:
+                self.plan_status[name].chain_name_missing = True
+            elif self.plan_status[name].chains:
+                next_plan = Path(self.folder / plan.chain_target())
                 self.plan_status[name].chain_exists = next_plan.exists()
-                if self.plan_status[name].chain_exists:
+                if self.plan_status[name].chain_exists and next_plan in self.plan_status:
                     self.plan_status[next_plan].is_used = True
 
             if name == self.first_plan:
                 self.plan_status[name].is_used = True
+
+
+def find_problems(folder):
+    """Return a list of the chaining problems in the plan set in folder ([] if valid)."""
+    try:
+        plan_set = PlanSetCheck(Path(folder))
+    except RuntimeError as exc:
+        return [str(exc)]
+    plan_set.check_plan_chains()
+
+    errors = []
+    for name, status in plan_set.plan_status.items():
+        if plan_set.all_plans[name].is_empty():
+            errors.append(f"Plan {name} is empty: it has no lines other than comments and "
+                          "blank lines.")
+        if not status.is_used:
+            errors.append(f"Plan {name} is not used.")
+        if status.chain_name_missing:
+            errors.append(f"Plan {name} has a #chain line with no plan file name.")
+        elif status.chains and not status.chain_exists:
+            errors.append(f"Plan {name} chains to a non-existent plan.")
+        if status.calls_flat and not status.flat_config_exists:
+            errors.append(f"Plan {name} calls a non-existent flat configuration file.")
+    return errors
 
 
 if __name__ == "__main__":
@@ -104,23 +149,8 @@ if __name__ == "__main__":
     parser.add_argument("folder", help="Folder containing the plan set")
     args = parser.parse_args()
 
-    plan_set = PlanSetCheck(Path(args.folder))
-    plan_set.check_plan_chains()
-
-    failed = False
-    errors = []
-    for name, status in plan_set.plan_status.items():
-        if not status.is_used:
-            errors.append(f"Plan {name} is not used.")
-            failed = True
-        if status.chains and not status.chain_exists:
-            errors.append(f"Plan {name} chains to a non-existent plan.")
-            failed = True
-        if status.calls_flat and not status.flat_config_exists:
-            errors.append(f"Plan {name} calls a non-existent flat configuration file.")
-            failed = True
-
-    if failed:
+    errors = find_problems(args.folder)
+    if errors:
         raise RuntimeError("Plan set is not valid. The problems are:\n\t" + "\n\t".join(errors))
     else:
         print("Plan set is valid.")
