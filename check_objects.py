@@ -1,7 +1,6 @@
 """Check the ACP plan files changed on a branch.
 
-    python check_objects.py [--base REF] [--staged] [--verified-ref REF]
-                            [--offline-ok] [--cache-dir DIR]
+    python check_objects.py [--base REF] [--staged] [--verified-ref REF] [--offline-ok]
 
 For every dated plan folder touched by the change this runs the chaining check
 (plan_check.py) and checks the format of every plan line. In strict folders
@@ -12,26 +11,28 @@ carry a `; coords-ok: <reason>` comment on its own line above it (after the
 previous target; only comments, #directives and blank lines in between).
 A folder this change creates is strict whatever its date.
 
-Exit status 0 = no errors, 1 = errors. Standard library only; the behaviour is
-specified by tests/test_check_objects.py.
+Exit status 0 = no errors, 1 = errors. Needs astropy and astroquery
+(requirements.txt); the behaviour is specified by tests/test_check_objects.py.
 """
 import argparse
-import hashlib
-import json
-import math
 import os
 import re
 import subprocess
 import sys
-import tempfile
+import threading
 import time
 import unicodedata
 import urllib.parse
-import urllib.request
+import warnings
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
+
+import astropy.units as u
+import numpy as np
+import requests
+from astropy.coordinates import Angle, SkyCoord
 
 import check_folder_names
 import plan_check
@@ -41,70 +42,47 @@ import plan_check
 # (the merge date of the Part A PR) when the PR is opened.
 STRICT_FROM = date(2026, 11, 16)
 
-_SEXA = re.compile(r"^([+-]?)(\d{1,2}):(\d{1,2}):(\d{1,2}(?:\.\d+)?)$")
+# astropy reads many more forms (12h00m00s, 12 00 00, 10:16:41.72s, two fields),
+# so only plain "[+-]d:m:s[.fff]" is passed to it.
+_SEXA = re.compile(r"^[+-]?\d{1,2}:\d{1,2}:\d{1,2}(?:\.\d+)?$")
 
 
-def _sexagesimal(text):
-    """Return (sign, a, b, c) for a 'a:b:c' string, or None."""
-    m = _SEXA.match(text)
-    if not m:
+def _angle(text, unit):
+    """An Angle for a 'd:m:s' string, or None (astropy only warns about 60 minutes or seconds)."""
+    if not _SEXA.match(text):
         return None
-    sign, a, b, c = m.groups()
-    a, b, c = int(a), int(b), float(c)
-    if b >= 60 or c >= 60:
-        return None
-    return (-1 if sign == "-" else 1), a, b, c
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        try:
+            return Angle(text, unit=unit)
+        except (ValueError, Warning):
+            return None
 
 
 def parse_ra(text):
-    """Parse an RA 'h:m:s' string; return degrees or None if invalid."""
-    parts = _sexagesimal(text)
-    if parts is None or text.startswith(("+", "-")):
-        return None
-    _, h, m, s = parts
-    if h >= 24:
-        return None
-    return (h + m / 60 + s / 3600) * 15
+    """Parse an RA 'h:m:s' string (never signed, below 24h); an Angle or None if invalid."""
+    angle = None if text.startswith(("+", "-")) else _angle(text, u.hourangle)
+    return angle if angle is not None and angle.hour < 24 else None
 
 
 def parse_dec(text):
-    """Parse a Dec '[+-]d:m:s' string; return degrees or None if invalid."""
-    parts = _sexagesimal(text)
-    if parts is None:
-        return None
-    sign, d, m, s = parts
-    value = d + m / 60 + s / 3600
-    if value > 90:
-        return None
-    return sign * value
+    """Parse a Dec '[+-]d:m:s' string (at most 90 degrees); an Angle or None if invalid."""
+    angle = _angle(text, u.deg)
+    return angle if angle is not None and abs(angle.deg) <= 90 else None
 
 
-def separation_arcsec(ra1, dec1, ra2, dec2):
-    """Great-circle separation of two positions in degrees, in arcsec (haversine)."""
-    r1, d1, r2, d2 = map(math.radians, (ra1, dec1, ra2, dec2))
-    h = (math.sin((d2 - d1) / 2) ** 2
-         + math.cos(d1) * math.cos(d2) * math.sin((r2 - r1) / 2) ** 2)
-    return math.degrees(2 * math.asin(min(1.0, math.sqrt(h)))) * 3600
+def format_separation(angle):
+    for unit in (u.arcsec, u.arcmin):
+        if angle < 60 * unit:
+            return f"{angle.to_value(unit):.1f} {unit}"
+    return f"{angle.to_value(u.deg):.1f} deg"
 
 
-def format_separation(arcsec):
-    if arcsec < 60:
-        return f"{arcsec:.1f} arcsec"
-    if arcsec < 3600:
-        return f"{arcsec / 60:.1f} arcmin"
-    return f"{arcsec / 3600:.1f} deg"
-
-
-def format_position(ra_deg, dec_deg):
-    """Format degrees as 'hh:mm:ss.ss +dd:mm:ss.s'."""
-    centis = round((ra_deg % 360) / 15 * 360000) % (24 * 360000)
-    h, rest = divmod(centis, 360000)
-    m, cs = divmod(rest, 6000)
-    sign = "-" if dec_deg < 0 else "+"
-    tenths = round(abs(dec_deg) * 36000)
-    d, rest = divmod(tenths, 36000)
-    dm, ds = divmod(rest, 600)
-    return f"{h:02d}:{m:02d}:{cs / 100:05.2f} {sign}{d:02d}:{dm:02d}:{ds / 10:04.1f}"
+def format_position(coord):
+    """Format a position as 'hh:mm:ss.ss +dd:mm:ss.s'."""
+    ra = coord.ra.to_string(unit=u.hourangle, sep=":", precision=2, pad=True)
+    dec = coord.dec.to_string(unit=u.deg, sep=":", precision=1, pad=True, alwayssign=True)
+    return f"{ra} {dec}"
 
 
 def name_key(name):
@@ -123,8 +101,7 @@ class PlanLine:
     name: str = None
     ra_text: str = None
     dec_text: str = None
-    ra: float = None          # degrees
-    dec: float = None         # degrees
+    coord: SkyCoord = None
     problem: str = None       # for kind == "bad"
     override: str = None      # coords-ok reason ("" if empty), None if absent
     stray: bool = False       # a coords-ok comment that reaches no target
@@ -136,7 +113,7 @@ _SPACED_TARGET = re.compile(r"^(\S.*?)\s+(\S*:\S*)\s+(\S*:\S*)$")
 _OVERRIDE = re.compile(r"^\s*;\s*coords-ok\s*:(.*)$", re.IGNORECASE)
 TARGET_FORMAT = "`name<TAB>RA<TAB>Dec`"
 # minus sign, hyphens and dashes that word processors put in place of "-"
-UNICODE_DASHES = set("\u2212\u2010\u2011\u2012\u2013\u2014\u2015\ufe63\uff0d")
+UNICODE_DASHES = set("−‐‑‒–—―﹣－")
 
 
 def classify_line(text):
@@ -165,11 +142,12 @@ def classify_line(text):
         elif dec is None:
             problems.append(f"Dec `{dec_text}` is not a valid coordinate "
                             "(use degrees:minutes:seconds, for example `+34:24:56.8` or `-0:32:00.9`)")
-        line = PlanLine("target", text, name=name, ra_text=ra_text, dec_text=dec_text,
-                        ra=ra, dec=dec)
+        line = PlanLine("target", text, name=name, ra_text=ra_text, dec_text=dec_text)
         if problems:
             line.kind = "bad"
             line.problem = "; ".join(problems) + "."
+        else:
+            line.coord = SkyCoord(ra, dec)
         return line
     if _SPACED_TARGET.match(stripped):
         return PlanLine("bad", text, problem=(
@@ -232,7 +210,10 @@ def is_flat_config(filename, text):
     return all(_FLAT_LINE.match(ln) for ln in content)
 
 
-# ---------------------------------------------------------------- catalog responses
+# ---------------------------------------------------------------- catalog lookups
+# Each lookup returns positions ([] = the service answered and does not know
+# the name) or raises (the service failed). An answer that is neither a
+# position nor a clear "not known" is a failure, never "not found".
 
 class ServiceError(Exception):
     """A catalog service failed or sent something other than the expected answer."""
@@ -240,22 +221,54 @@ class ServiceError(Exception):
 
 @dataclass(frozen=True)
 class Position:
-    ra: float      # degrees, J2000
-    dec: float
+    coord: SkyCoord    # ICRS, epoch 2000
     source: str
 
 
+STAR_TOLERANCE = 20 * u.arcsec       # for TIC, Gaia and VSX answers
+SESAME_TOLERANCE = 2 * u.arcmin      # for Sesame (SIMBAD/NED/VizieR) answers
+TOLERANCES = {"Sesame at CDS": SESAME_TOLERANCE, "Sesame at CfA": SESAME_TOLERANCE,
+              "AAVSO VSX": STAR_TOLERANCE, "MAST": STAR_TOLERANCE,
+              "Gaia archive": STAR_TOLERANCE}
+TIMEOUT = 30          # seconds per lookup
+MIN_INTERVAL = 1.0    # seconds between lookups, to be polite to the services
+USER_AGENT = "acp-plans-coordinate-check"
+
+# The two Sesame mirrors are asked separately, not as failover: they can give
+# different centres (M39 by 5.7 arcmin) and real plans match either.
+SESAME_MIRRORS = {"CDS": "https://cds.unistra.fr/cgi-bin/nph-sesame",
+                  "CfA": "https://vizier.cfa.harvard.edu/viz-bin/nph-sesame"}
+VSX_URL = "https://vsx.aavso.org/index.php"     # www.aavso.org redirects here
+GAIA_TAP_URL = "https://gea.esac.esa.int/tap-server/tap"
 _RESOLVER_LABELS = {"simbad": "SIMBAD", "ned": "NED", "vizier": "VizieR"}
 
 
+def _get(url, params=None):
+    # Catalogs' deadline (TIMEOUT) reports a slow answer; this ends the abandoned request.
+    response = requests.get(url, params=params, headers={"User-Agent": USER_AGENT},
+                            timeout=TIMEOUT + 5)
+    response.raise_for_status()
+    return response
+
+
+def sesame(mirror, name):
+    """Sesame (SIMBAD, then NED, then VizieR) at one mirror.
+
+    Not astropy's name resolver: it reports an unknown name and an answer that
+    is not from Sesame (an HTML error page) with the same NameResolveError.
+    """
+    url = f"{SESAME_MIRRORS[mirror]}/-oxp/SNV?{urllib.parse.quote(name)}"
+    return parse_sesame(_get(url).text, mirror)
+
+
 def parse_sesame(text, mirror):
-    """Positions in a Sesame XML answer ([] = name not known); ServiceError if not Sesame XML."""
-    if "<Sesame" not in text:
-        raise ServiceError("answer was not a Sesame XML document: " + _snippet(text))
+    """Positions in a Sesame XML answer; [] only if Sesame says 'Nothing found'."""
     try:
         root = ET.fromstring(text.strip())
     except ET.ParseError as exc:
-        raise ServiceError(f"could not parse Sesame XML: {exc}") from None
+        raise ServiceError(f"answer was not a Sesame XML document ({exc})") from None
+    if root.tag != "Sesame":
+        raise ServiceError("answer was not a Sesame XML document")
     positions = []
     for res in root.iter("Resolver"):
         ra, dec = res.findtext("jradeg"), res.findtext("jdedeg")
@@ -263,64 +276,59 @@ def parse_sesame(text, mirror):
             continue
         m = re.match(r"\s*\w+\s*=\s*([A-Za-z]+)", res.get("name", ""))
         label = _RESOLVER_LABELS.get(m.group(1).lower(), m.group(1)) if m else "Sesame"
-        positions.append(Position(float(ra), float(dec), f"{label} via Sesame at {mirror}"))
+        positions.append(Position(SkyCoord(float(ra), float(dec), unit=u.deg),
+                                  f"{label} via Sesame at {mirror}"))
+    if not positions and not any("Nothing found" in (info.text or "")
+                                 for info in root.iter("INFO")):
+        raise ServiceError("Sesame gave neither a position nor 'Nothing found'")
     return positions
 
 
-def _load_json(text):
-    try:
-        return json.loads(text)
-    except ValueError:
-        raise ServiceError("answer was not JSON: " + _snippet(text)) from None
-
-
-def _snippet(text):
-    return " ".join(text[:120].split()) or "(empty answer)"
-
-
-def parse_mast(text, tic_id):
-    data = _load_json(text)
-    if not isinstance(data, dict) or data.get("status") not in ("COMPLETE", None):
-        raise ServiceError(f"MAST status {data.get('status')!r}: {data.get('msg')!r}"
-                           if isinstance(data, dict) else "unexpected MAST answer")
-    return [Position(float(row["ra"]), float(row["dec"]), "TESS Input Catalog at MAST")
-            for row in data.get("data") or []
-            if _same_id(row.get("ID"), tic_id) and row.get("ra") is not None]
-
-
-def _same_id(a, b):
-    """Compare catalog ids as integers, so TIC_0123 is TIC 123."""
-    try:
-        return int(str(a)) == int(str(b))
-    except ValueError:
-        return False
-
-
-def parse_gaia(text):
-    data = _load_json(text)
-    if not isinstance(data, dict) or "data" not in data:
-        raise ServiceError("unexpected Gaia archive answer: " + _snippet(text))
-    names = [col.get("name") for col in data.get("metadata", [])]
-    positions = []
-    for row in data["data"]:
-        values = dict(zip(names, row))
-        if values.get("ra2000") is not None:
-            positions.append(Position(float(values["ra2000"]), float(values["dec2000"]),
-                                      "Gaia DR3 (epoch 2000)"))
-        elif values.get("ra") is not None:
-            positions.append(Position(float(values["ra"]), float(values["dec"]),
-                                      "Gaia DR3 (epoch 2016)"))
-    return positions
-
-
-def parse_vsx(text):
-    data = _load_json(text)
-    if not isinstance(data, dict) or "VSXObject" not in data:
-        raise ServiceError("unexpected VSX answer: " + _snippet(text))
-    obj = data["VSXObject"]
-    if not isinstance(obj, dict) or "RA2000" not in obj:
+def vsx(name):
+    """The AAVSO Variable Star Index, by name."""
+    data = _get(VSX_URL, {"view": "api.object", "format": "json", "ident": name}).json()
+    obj = data.get("VSXObject") if isinstance(data, dict) else None
+    if obj == []:
         return []
-    return [Position(float(obj["RA2000"]), float(obj["Declination2000"]), "AAVSO VSX")]
+    if not isinstance(obj, dict) or "RA2000" not in obj:
+        raise ServiceError(f"unexpected VSX answer: {str(data)[:100]}")
+    return [Position(SkyCoord(float(obj["RA2000"]), float(obj["Declination2000"]), unit=u.deg),
+                     "AAVSO VSX")]
+
+
+def tic(tic_id):
+    """The TESS Input Catalog at MAST, by TIC number."""
+    from astroquery.exceptions import NoResultsWarning
+    from astroquery.mast import Catalogs
+    tic_id = str(int(tic_id))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", NoResultsWarning)
+        rows = Catalogs.query_criteria(catalog="Tic", ID=tic_id)
+    return [Position(SkyCoord(row["ra"], row["dec"], unit=u.deg), "TESS Input Catalog at MAST")
+            for row in rows if str(row["ID"]) == tic_id]
+
+
+def gaia(source_id):
+    """Gaia DR3 at the ESA archive, propagated to epoch 2000 by the archive."""
+    # astroquery.gaia contacts the archive when imported; its base class does not.
+    from astroquery.utils.tap.core import TapPlus
+    prop = "EPOCH_PROP_POS(ra,dec,parallax,pmra,pmdec,radial_velocity,ref_epoch,2000)"
+    job = TapPlus(url=GAIA_TAP_URL).launch_job(
+        f"SELECT ra, dec, COORD1({prop}) AS ra2000, COORD2({prop}) AS dec2000 "
+        f"FROM gaiadr3.gaia_source WHERE source_id={int(source_id)}")
+    positions = []
+    for row in job.get_results():
+        epoch = 2016 if np.ma.is_masked(row["ra2000"]) else 2000    # no proper motion: 2016
+        ra, dec = (row["ra"], row["dec"]) if epoch == 2016 else (row["ra2000"], row["dec2000"])
+        positions.append(Position(SkyCoord(ra, dec, unit=u.deg), f"Gaia DR3 (epoch {epoch})"))
+    return positions
+
+
+def lookup(service, query):
+    """Ask one service (a key of TOLERANCES) about one name or number."""
+    if service.startswith("Sesame at "):
+        return sesame(service.removeprefix("Sesame at "), query)
+    return {"AAVSO VSX": vsx, "MAST": tic, "Gaia archive": gaia}[service](query)
 
 
 # ---------------------------------------------------------------- routing
@@ -330,10 +338,10 @@ _GAIA = re.compile(r"^Gaia[ _-]?DR3[ _-]?(\d+)$", re.IGNORECASE)
 
 
 def route(name):
-    """('tic', id), ('gaia', id) or ('sesame', None)."""
+    """('tic', number), ('gaia', id) or ('sesame', None)."""
     m = _TIC.match(name)
     if m:
-        return "tic", m.group(1)
+        return "tic", str(int(m.group(1)))       # TIC_0123 is TIC 123
     m = _GAIA.match(name)
     if m:
         return "gaia", m.group(1)
@@ -363,113 +371,76 @@ def name_candidates(name):
     return out
 
 
-# ---------------------------------------------------------------- requests
-
-STAR_TOLERANCE = 20.0       # arcsec, for TIC, Gaia and VSX answers
-SESAME_TOLERANCE = 120.0    # arcsec, for Sesame (SIMBAD/NED/VizieR) answers
-
-SESAME_MIRRORS = {
-    "CDS": "https://cds.unistra.fr/cgi-bin/nph-sesame/-oxp/SNV?",
-    "CfA": "https://vizier.cfa.harvard.edu/viz-bin/nph-sesame/-oxp/SNV?",
-}
-MAST_URL = "https://mast.stsci.edu/api/v0/invoke"
-GAIA_URL = "https://gea.esac.esa.int/tap-server/tap/sync"
-VSX_URL = "https://www.aavso.org/vsx/index.php?view=api.object&format=json&ident="
-
-
-@dataclass(frozen=True)
-class Request:
-    service: str               # for messages, e.g. "Sesame at CDS"
-    url: str
-    data: str                  # POST body, or None for GET
-    tolerance: float
-    parse: object = field(compare=False, repr=False)
-
-
-def sesame_request(mirror, query):
-    return Request(f"Sesame at {mirror}", SESAME_MIRRORS[mirror] + urllib.parse.quote(query),
-                   None, SESAME_TOLERANCE, lambda text: parse_sesame(text, mirror))
-
-
-def vsx_request(query):
-    return Request("AAVSO VSX", VSX_URL + urllib.parse.quote(query), None, STAR_TOLERANCE,
-                   parse_vsx)
-
-
-def mast_request(tic_id):
-    tic_id = str(int(tic_id))
-    req = {"service": "Mast.Catalogs.Filtered.Tic", "format": "json",
-           "params": {"columns": "ID,ra,dec,pmRA,pmDEC",
-                      "filters": [{"paramName": "ID", "values": [tic_id]}]}}
-    return Request("MAST", MAST_URL, urllib.parse.urlencode({"request": json.dumps(req)}),
-                   STAR_TOLERANCE, lambda text: parse_mast(text, tic_id))
-
-
-def gaia_request(source_id):
-    prop = "EPOCH_PROP_POS(ra,dec,parallax,pmra,pmdec,radial_velocity,ref_epoch,2000)"
-    query = (f"SELECT source_id, ra, dec, COORD1({prop}) AS ra2000, COORD2({prop}) AS dec2000 "
-             f"FROM gaiadr3.gaia_source WHERE source_id={int(source_id)}")
-    body = urllib.parse.urlencode({"REQUEST": "doQuery", "LANG": "ADQL", "FORMAT": "json",
-                                   "QUERY": query})
-    return Request("Gaia archive", GAIA_URL, body, STAR_TOLERANCE, parse_gaia)
-
-
 # ---------------------------------------------------------------- catalog client
 
-def _service_error(request, exc):
-    detail = str(exc) if isinstance(exc, ServiceError) else f"{type(exc).__name__}: {exc}"
-    return ServiceError(f"{request.service}: {detail}")
+def _describe(exc):
+    return str(exc) if isinstance(exc, ServiceError) else f"{type(exc).__name__}: {exc}"
+
+
+def _call_with_deadline(function, args, seconds):
+    """function(*args), or TimeoutError after seconds.
+
+    astroquery's MAST and TAP clients take no timeout, so every lookup runs
+    under this deadline; a request still hanging after it is abandoned.
+    """
+    outcome = {}
+
+    def target():
+        try:
+            outcome["value"] = function(*args)
+        except Exception as exc:
+            outcome["error"] = exc
+
+    worker = threading.Thread(target=target, daemon=True)
+    worker.start()
+    worker.join(seconds)
+    if worker.is_alive():
+        raise TimeoutError(f"no answer within {seconds} s")
+    if "error" in outcome:
+        raise outcome["error"]
+    return outcome["value"]
 
 
 class Catalogs:
-    """Asks catalog services through an injected fetch(url, data) -> str.
+    """Asks catalog services through lookup(service, query).
 
-    Each distinct request is made at most once per run (answers and failures are
-    remembered), and well-formed answers are kept in cache_dir if one is given.
-    A service whose transport fails (timeout, connection or HTTP error, after the
-    fetcher's retry) is not asked again in the run, so an outage costs one
-    timeout rather than one per name. A malformed answer fails only its request.
+    Each distinct question is asked at most once per run (answers and failures
+    are remembered). A service whose transport fails (timeout, connection or
+    HTTP error) is not asked again in the run, so an outage costs one timeout
+    rather than one per name. A malformed answer fails only its question.
     """
 
-    def __init__(self, fetch, cache_dir=None):
-        self.fetch = fetch
-        self.cache_dir = Path(cache_dir) if cache_dir else None
+    def __init__(self, lookup=lookup, timeout=TIMEOUT):
+        self.lookup, self.timeout = lookup, timeout
         self.memo = {}
-        self.down = {}       # service -> its first failure; not asked again this run
+        self.down = {}       # service -> its first transport failure
+        self.last = None     # when the last lookup ended
 
-    def _cache_file(self, request):
-        key = hashlib.sha256(f"{request.url}|{request.data or ''}".encode()).hexdigest()[:32]
-        return self.cache_dir / f"{key}.txt"
-
-    def ask(self, request):
-        """Positions from one request ([] = not known); raises ServiceError on failure."""
-        key = (request.url, request.data)
+    def ask(self, service, query):
+        """Positions from one service ([] = not known); raises ServiceError on failure."""
+        key = (service, query)
         if key not in self.memo:
-            self.memo[key] = self._ask(request)
+            self.memo[key] = self._ask(service, query)
         result = self.memo[key]
         if isinstance(result, ServiceError):
             raise result
         return result
 
-    def _ask(self, request):
-        cached = self._cache_file(request) if self.cache_dir else None
-        if cached and cached.exists():
-            return request.parse(cached.read_text(encoding="utf-8"))
-        if request.service in self.down:
-            return self.down[request.service]
+    def _ask(self, service, query):
+        if service in self.down:
+            return self.down[service]
+        if self.last is not None:
+            time.sleep(max(0.0, self.last + MIN_INTERVAL - time.monotonic()))
         try:
-            text = self.fetch(request.url, request.data)
-        except Exception as exc:   # transport failure: the service is down for this run
-            self.down[request.service] = _service_error(request, exc)
-            return self.down[request.service]
-        try:
-            positions = request.parse(text)
-        except Exception as exc:   # a malformed answer: only this request failed
-            return _service_error(request, exc)
-        if cached:
-            cached.parent.mkdir(parents=True, exist_ok=True)
-            cached.write_text(text, encoding="utf-8")
-        return positions
+            return _call_with_deadline(self.lookup, (service, query), self.timeout)
+        except Exception as exc:
+            error = ServiceError(f"{service}: {_describe(exc)}")
+            # requests' errors are OSErrors; its JSON decoding error is also a ValueError
+            if isinstance(exc, OSError) and not isinstance(exc, ValueError):
+                self.down[service] = error
+            return error
+        finally:
+            self.last = time.monotonic()
 
 
 # ---------------------------------------------------------------- verdicts
@@ -479,53 +450,51 @@ class Verdict:
     status: str                 # confirmed, mismatch, notfound, unreachable
     confirmed_by: Position = None
     nearest: Position = None
-    nearest_sep: float = None   # arcsec
-    nearest_tolerance: float = None
+    nearest_sep: Angle = None
+    nearest_tolerance: Angle = None
     failures: list = field(default_factory=list)
 
 
-def check_target(name, ra, dec, catalogs):
-    """Compare a plan position (degrees) with the catalogs, stopping at the first confirmation."""
+def check_target(name, coord, catalogs):
+    """Compare a plan position with the catalogs, stopping at the first confirmation."""
     verdict = Verdict("notfound")
 
-    def try_request(request):
+    def ask(service, query):
         """Ask one source; record its answer or failure. Returns (confirmed, name_known)."""
         try:
-            positions = catalogs.ask(request)
+            positions = catalogs.ask(service, query)
         except ServiceError as exc:
             if str(exc) not in verdict.failures:
                 verdict.failures.append(str(exc))
             return False, False
+        tolerance = TOLERANCES[service]
         for pos in positions:
-            sep = separation_arcsec(ra, dec, pos.ra, pos.dec)
-            if sep <= request.tolerance:
+            sep = coord.separation(pos.coord)
+            if verdict.nearest_sep is None or sep < verdict.nearest_sep or sep <= tolerance:
+                verdict.nearest, verdict.nearest_sep = pos, sep
+                verdict.nearest_tolerance = tolerance
+            if sep <= tolerance:
                 verdict.status, verdict.confirmed_by = "confirmed", pos
-                verdict.nearest, verdict.nearest_sep = pos, sep
-                verdict.nearest_tolerance = request.tolerance
                 return True, True
-            if verdict.nearest_sep is None or sep < verdict.nearest_sep:
-                verdict.nearest, verdict.nearest_sep = pos, sep
-                verdict.nearest_tolerance = request.tolerance
         return False, bool(positions)
 
     kind, ident = route(name)
     if kind in ("tic", "gaia"):
-        request = mast_request(ident) if kind == "tic" else gaia_request(ident)
-        if try_request(request)[0]:
+        if ask("MAST" if kind == "tic" else "Gaia archive", ident)[0]:
             return verdict
     else:
         candidates = name_candidates(name)
         for query in candidates:
             found = False
-            for mirror in SESAME_MIRRORS:
-                confirmed, known = try_request(sesame_request(mirror, query))
+            for service in ("Sesame at CDS", "Sesame at CfA"):
+                confirmed, known = ask(service, query)
                 if confirmed:
                     return verdict
                 found = found or known
             if found:
                 break
         for query in candidates[1:] or candidates:
-            confirmed, known = try_request(vsx_request(query))
+            confirmed, known = ask("AAVSO VSX", query)
             if confirmed:
                 return verdict
             if known:
@@ -535,41 +504,6 @@ def check_target(name, ra, dec, catalogs):
     elif verdict.nearest is not None:
         verdict.status = "mismatch"
     return verdict
-
-
-# ---------------------------------------------------------------- network
-
-USER_AGENT = "acp-plans-coordinate-check (python-urllib)"
-TIMEOUT = 30          # seconds per request
-MIN_INTERVAL = 1.0    # seconds between requests, to be polite to the services
-RETRY_DELAY = 3.0     # seconds before the single retry
-
-
-class UrllibFetcher:
-    """fetch(url, data) -> text over HTTP(S); one retry; raises on failure."""
-
-    def __init__(self, urlopen=urllib.request.urlopen, sleep=time.sleep, clock=time.monotonic):
-        self.urlopen, self.sleep, self.clock = urlopen, sleep, clock
-        self.last = None
-
-    def _once(self, url, data):
-        now = self.clock()
-        if self.last is not None and now - self.last < MIN_INTERVAL:
-            self.sleep(MIN_INTERVAL - (now - self.last))
-        request = urllib.request.Request(url, data=data.encode() if data is not None else None,
-                                         headers={"User-Agent": USER_AGENT})
-        try:
-            with self.urlopen(request, timeout=TIMEOUT) as response:
-                return response.read().decode("utf-8", "replace")
-        finally:
-            self.last = self.clock()
-
-    def __call__(self, url, data=None):
-        try:
-            return self._once(url, data)
-        except Exception:
-            self.sleep(RETRY_DELAY)
-            return self._once(url, data)
 
 
 # ---------------------------------------------------------------- findings and folders
@@ -694,7 +628,7 @@ def check_file_format(path, text, level):
     return findings, targets
 
 
-VERIFY_TOLERANCE = 20.0   # arcsec, for "already verified" by an earlier plan
+VERIFY_TOLERANCE = 20 * u.arcsec   # for "already verified" by an earlier plan
 
 
 @dataclass(frozen=True)
@@ -703,8 +637,7 @@ class VerifiedEntry:
     day: date
     path: str
     line: int
-    ra: float
-    dec: float
+    coord: SkyCoord
     override: str
 
 
@@ -729,14 +662,13 @@ class VerifiedIndex:
             for line in parse_plan_text(text):
                 if line.kind == "target":
                     entries.append(VerifiedEntry(name_key(line.name), day, path, line.number,
-                                                 line.ra, line.dec, line.override))
+                                                 line.coord, line.override))
         return cls(entries)
 
-    def find(self, name, ra, dec, before):
+    def find(self, name, coord, before):
         """An earlier entry with the same name key within 20 arcsec; prefers ones without override."""
         matches = [e for e in self.by_key.get(name_key(name), [])
-                   if e.day < before
-                   and separation_arcsec(ra, dec, e.ra, e.dec) <= VERIFY_TOLERANCE]
+                   if e.day < before and coord.separation(e.coord) <= VERIFY_TOLERANCE]
         matches.sort(key=lambda e: (bool(e.override), e.day, e.path, e.line))
         return matches[0] if matches else None
 
@@ -756,7 +688,7 @@ def check_line(path, line, day, index, catalogs, offline_ok):
         return [Finding("override", path, line.number,
                         f"`{name}`: coordinates accepted without a catalog check because of "
                         f"`; coords-ok: {line.override}`.")]
-    earlier = index.find(name, line.ra, line.dec, day)
+    earlier = index.find(name, line.coord, day)
     if earlier is not None:
         where = f"{earlier.path} line {earlier.line}"
         if earlier.override:
@@ -765,13 +697,13 @@ def check_line(path, line, day, index, catalogs, offline_ok):
                             f"`; coords-ok: {earlier.override}`).")]
         return [Finding("notice", path, line.number,
                         f"`{name}`: verified by earlier plan ({where}).")]
-    verdict = check_target(name, line.ra, line.dec, catalogs)
+    verdict = check_target(name, line.coord, catalogs)
     return [verdict_finding(path, line, verdict, offline_ok)]
 
 
 def _nearest_text(verdict):
     return (f"{format_separation(verdict.nearest_sep)} from the catalog position "
-            f"{format_position(verdict.nearest.ra, verdict.nearest.dec)} "
+            f"{format_position(verdict.nearest.coord)} "
             f"({verdict.nearest.source})")
 
 
@@ -1006,8 +938,6 @@ def parse_args(argv):
                              "(default: the base ref, or HEAD with --staged)")
     parser.add_argument("--offline-ok", action="store_true",
                         help="an unreachable catalog service is a warning instead of an error")
-    parser.add_argument("--cache-dir", default=None,
-                        help="directory for cached catalog answers (default: a temporary directory)")
     return parser.parse_args(argv)
 
 
@@ -1035,10 +965,10 @@ def report_failure(message):
     return 1
 
 
-def main(argv=None, fetch=None):
+def main(argv=None, lookup=lookup):
     args = parse_args(argv)
     try:
-        return run(args, fetch)
+        return run(args, lookup)
     except Exception as exc:     # never a traceback, never a pass
         message = ("The plan check stopped because of an unexpected problem "
                    f"({type(exc).__name__}: {exc}). Use Re-run jobs; if it keeps failing "
@@ -1050,7 +980,7 @@ def main(argv=None, fetch=None):
             return 1
 
 
-def run(args, fetch):
+def run(args, lookup):
     try:
         repo = Path(git_output(Path.cwd(), "rev-parse", "--show-toplevel").decode().strip())
         base_commit = diff_base(repo, args.base, args.staged)
@@ -1116,10 +1046,9 @@ def run(args, fetch):
                 index = VerifiedIndex.from_files(ref_plan_files(repo, ref))
         except GitError as exc:
             return report_failure(f"could not read the verified plans from git: {exc}")
-        with tempfile.TemporaryDirectory() as tmp:
-            catalogs = Catalogs(fetch or UrllibFetcher(), args.cache_dir or tmp)
-            for rel, line, day in to_check:
-                findings += check_line(rel, line, day, index, catalogs, args.offline_ok)
+        catalogs = Catalogs(lookup)
+        for rel, line, day in to_check:
+            findings += check_line(rel, line, day, index, catalogs, args.offline_ok)
 
     print(visible(f"Checked plan folders: {', '.join(sorted(folders)) or '(none)'}"))
     print(format_text_report(findings))

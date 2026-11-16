@@ -169,19 +169,26 @@ merge past a red check.
   requests from forks by first-time contributors need **Approve workflows to
   run** first.
 - A pull request that changes the check script can make its own check pass;
-  review changes to `check_objects.py`, `plan_check.py` and
-  `check_folder_names.py` with care.
+  review changes to `check_objects.py`, `plan_check.py`,
+  `check_folder_names.py` and `requirements.txt` with care.
 - When the go-live date is decided, set `STRICT_FROM` in `check_objects.py`.
 
 ## Running the check locally
 
-The scripts use only the Python standard library and need Python 3.10 or
-newer.
+`check_objects.py` needs Python 3.11 or newer and the packages in
+`requirements.txt` (astropy and astroquery). The workflow uses Python 3.13.
 
 Check the changes on your branch against `origin/main`:
 
 ```
+python -m pip install -r requirements.txt
 python check_objects.py
+```
+
+or, with [uv](https://docs.astral.sh/uv/):
+
+```
+uv run --python 3.13 --with-requirements requirements.txt python check_objects.py
 ```
 
 Use `--base REF` to compare with another ref, and `--offline-ok` to make an
@@ -191,9 +198,10 @@ unreachable catalog a warning instead of an error. `python check_objects.py
 ### Pre-commit hook
 
 `.pre-commit-config.yaml` runs `check_objects.py --staged --offline-ok` before
-each commit. It runs the script with Python 3.11 through
-[uv](https://docs.astral.sh/uv/), so both `pre-commit` and `uv` must be on
-your `PATH`. To set it up once in your clone:
+each commit. It runs the script with Python 3.13 and the packages in
+`requirements.txt` through uv, so both `pre-commit` and `uv` must be on your
+`PATH`. uv downloads Python and the packages the first time and reuses them
+after that. To set it up once in your clone:
 
 ```
 pre-commit install
@@ -205,7 +213,8 @@ warning here; in the GitHub check it is an error.
 ### Tests
 
 ```
-uv run --python 3.11 --with pytest pytest tests/
+uv run --python 3.13 --with-requirements requirements.txt --with pytest pytest tests/
 ```
 
-The tests use recorded catalog answers and do not need the network.
+The tests use recorded catalog answers and do not use the network: a test
+that tries to connect fails.

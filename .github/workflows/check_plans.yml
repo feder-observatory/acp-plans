@@ -4,8 +4,9 @@
 # job summary.
 #
 # The check-plans job always runs (no path filters, no "if:"), so it can be a
-# required status check on main. The unit tests are a separate job so that a
-# PyPI outage while installing pytest cannot block the required check.
+# required status check on main. The unit tests are a separate job, not meant
+# to be required. Both install astropy and astroquery from requirements.txt;
+# pip's download cache is kept between runs.
 
 name: Check ACP plans
 
@@ -28,10 +29,14 @@ jobs:
       with:
         # Full history, so the base commit is available to git.
         fetch-depth: 0
-    - name: Set up Python 3.11
+    - name: Set up Python 3.13
       uses: actions/setup-python@v7
       with:
-        python-version: "3.11"
+        python-version: "3.13"
+        cache: pip
+        cache-dependency-path: requirements.txt
+    - name: Install requirements
+      run: python -m pip install -r requirements.txt
     - name: Check changed plan folders
       env:
         EVENT_NAME: ${{ github.event_name }}
@@ -60,11 +65,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v7
-    - name: Set up Python 3.11
+    - name: Set up Python 3.13
       uses: actions/setup-python@v7
       with:
-        python-version: "3.11"
-    - name: Install pytest
-      run: python -m pip install pytest
+        python-version: "3.13"
+        cache: pip
+        cache-dependency-path: requirements.txt
+    - name: Install requirements and pytest
+      run: python -m pip install -r requirements.txt pytest
     - name: Run the tests
       run: python -m pytest tests/
