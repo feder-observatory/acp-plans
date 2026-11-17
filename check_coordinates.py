@@ -6,6 +6,7 @@ A target line is "name<TAB>ra<TAB>dec". To accept a target the catalogs do
 not know (or a deliberate offset), put a comment containing "coords-ok"
 somewhere between the previous target and this one.
 """
+import os
 import re
 import sys
 
@@ -69,10 +70,13 @@ def problems(text, lookup=catalog_position):
 
 
 if __name__ == "__main__":
-    failed = False
+    messages = []
     for path in sys.argv[1:]:
         with open(path, encoding="utf-8-sig") as plan_file:
             for number, message in problems(plan_file.read()):
-                print(f"{path}:{number}: {message}")
-                failed = True
-    sys.exit(failed)
+                messages.append(f"{path}:{number}: {message}")
+                print(messages[-1], flush=True)
+    if messages and "GITHUB_STEP_SUMMARY" in os.environ:    # shown on the run's Summary tab
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+            summary.write("### Coordinate problems\n\n" + "".join(f"- `{m}`\n" for m in messages))
+    sys.exit(bool(messages))
