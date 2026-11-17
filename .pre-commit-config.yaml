@@ -1,0 +1,19 @@
+# Run the plan check on staged changes before each commit.
+# Setup: pre-commit install   (needs pre-commit and uv on PATH)
+#
+# uv runs check_objects.py with Python 3.13, the version the GitHub workflow
+# uses, and with the packages in requirements.txt (astropy, astroquery),
+# downloading them once and reusing them from its cache.
+# --offline-ok: an unreachable catalog service is a warning here, not an error.
+repos:
+  - repo: local
+    hooks:
+      - id: check-plans
+        name: check ACP plans
+        entry: uv run --no-project --python 3.13 --with-requirements requirements.txt python check_objects.py --staged --offline-ok
+        language: system
+        pass_filenames: false
+        always_run: true
+        # Show the report even when the hook passes, so warnings (such as a
+        # catalog that could not be reached) are seen.
+        verbose: true

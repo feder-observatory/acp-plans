@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sesame xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:noNamespaceSchemaLocation="https://vizier.cds.unistra.fr/xml/sesame_4x.xsd">
+<Target option="SNV">
+  <name>NGC 7790</name>
+  <!-- Q364615 #1 -->
+  <Resolver name="Sc=Simbad (CDS, via client/server)"><!--delay: 78ms [2] -->
+    <oid>128044</oid>
+    <otype>OpC</otype>
+    <jpos>23:58:27.10 +61:12:36.0</jpos>
+    <jradeg>359.61291667</jradeg>
+    <jdedeg>61.21</jdedeg>
+    <refPos>2021A&amp;A...647A..19T</refPos>
+    <pm>
+      <v>3.680</v><e>0.011</e><q>C</q><r>2020A&amp;A...633A..99C</r>
+      <pa>242.9</pa>
+      <pmRA>-3.276</pmRA><epmRA>0.008</epmRA>
+      <pmDE>-1.677</pmDE><epmDE>0.007</epmDE>
+    </pm>
+    <Vel><v>-69.856</v><e>0.789</e><q>A</q><r>2021MNRAS.504..356D</r></Vel>
+    <plx><v>0.269</v><e>0.004</e><q>C</q><r>2020A&amp;A...633A..99C</r></plx>
+    <oname>NGC  7790</oname>
+    <nrefs>288</nrefs>
+  </Resolver>
+</Target>
+</Sesame>
+<!--- ====Done (2026-Nov-16,17:47:54z)==== -->

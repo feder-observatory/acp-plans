@@ -1,0 +1,2 @@
+astropy>=7.2
+astroquery>=0.4.10

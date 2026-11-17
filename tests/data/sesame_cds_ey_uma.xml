@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sesame xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:noNamespaceSchemaLocation="https://vizier.cds.unistra.fr/xml/sesame_4x.xsd">
+<Target option="SNV">
+  <name>ey uma</name>
+  <!-- Q231133 #1 -->
+  <Resolver name="S=Simbad, IDIA (via url)"><!--delay: 884ms [35] -->
+    <oid>539158</oid>
+    <oname>V* EY UMa</oname>
+    <otype>RR*</otype>
+    <jpos>09:02:20.76 +49:49:09.1</jpos>
+    <jradeg>135.58650086656</jradeg>
+    <jdedeg>49.81921088379</jdedeg>
+    <refPos>2020yCat.1350....0G</refPos>
+    <errRAmas>0.0219</errRAmas><errDEmas>0.0190</errDEmas>
+    <pm>
+      <v>7.684</v><e>0.035</e><q>A</q><r>2020yCat.1350....0G</r>
+      <pa>158.1</pa>
+      <pmRA>2.865</pmRA><epmRA>0.027</epmRA>
+      <pmDE>-7.130</pmDE><epmDE>0.023</epmDE>
+    </pm>
+    <plx><v>0.1166</v><e>0.0281</e><q>A</q><r>2020yCat.1350....0G</r></plx>
+  </Resolver>
+</Target>
+</Sesame>
+<!--- ====Done (2026-Nov-16,17:38:35z)==== -->
