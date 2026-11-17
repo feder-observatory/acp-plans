@@ -14,12 +14,13 @@ SCRIPT = REPO_ROOT / "check_folder_names.py"
 # Top-level directories that are not plan folders.
 NOT_PLAN_FOLDERS = {"tests", "__pycache__"}
 
+# The one existing folder with a suffix, from before suffixes were disallowed.
+OLD_SUFFIXED_FOLDERS = {"2023-05-20-day-calib"}
+
 
 @pytest.mark.parametrize("name", [
     "2026-10-19",
-    "2023-05-20-day-calib",
     "2024-02-29",          # leap day
-    "2026-11-15-extra-suffix",
 ])
 def test_valid_names(name):
     assert check_name(name)
@@ -32,7 +33,9 @@ def test_valid_names(name):
     "2026-02-30",          # not a real date
     "2025-02-29",          # not a leap year
     "2026-1-19",           # not zero-padded
-    "2026-10-19-",         # empty suffix
+    "2026-10-19-",         # trailing dash
+    "2023-05-20-day-calib",        # suffixes are not allowed
+    "2026-11-15-extra-suffix",
     "2026-10-19\n",        # trailing newline
     "2026-10-1",
     ".",
@@ -50,8 +53,8 @@ def test_every_existing_top_level_folder_passes():
                and not p.name.startswith(".")
                and p.name not in NOT_PLAN_FOLDERS]
     assert folders, "expected some plan folders in the repo"
-    bad = [name for name in folders if not check_name(name)]
-    assert bad == []
+    bad = {name for name in folders if not check_name(name)}
+    assert bad == OLD_SUFFIXED_FOLDERS
 
 
 def run_script(arg):
@@ -60,10 +63,11 @@ def run_script(arg):
 
 
 def test_cli_accepts_valid_name():
-    assert run_script("2023-05-20-day-calib").returncode == 0
+    assert run_script("2026-10-19").returncode == 0
 
 
 @pytest.mark.parametrize("name", ["2026-10-19 copy", "x2026-10-19",
+                                  "2023-05-20-day-calib",
                                   "2026-13-45", "."])
 def test_cli_rejects_invalid_name(name):
     result = run_script(name)
