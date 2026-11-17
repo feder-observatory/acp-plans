@@ -232,6 +232,7 @@ TOLERANCES = {"Sesame at CDS": SESAME_TOLERANCE, "Sesame at CfA": SESAME_TOLERAN
               "Gaia archive": STAR_TOLERANCE}
 TIMEOUT = 30          # seconds per lookup
 MIN_INTERVAL = 1.0    # seconds between lookups, to be polite to the services
+RETRY_DELAY = 3.0     # seconds before the single retry after a transport failure
 USER_AGENT = "acp-plans-coordinate-check"
 
 # The two Sesame mirrors are asked separately, not as failover: they can give
@@ -406,8 +407,9 @@ class Catalogs:
 
     Each distinct question is asked at most once per run (answers and failures
     are remembered). A service whose transport fails (timeout, connection or
-    HTTP error) is not asked again in the run, so an outage costs one timeout
-    rather than one per name. A malformed answer fails only its question.
+    HTTP error) is tried once more; if that fails too it is not asked again in
+    the run, so an outage costs two timeouts rather than one per name. A
+    malformed answer fails only its question and is not retried.
     """
 
     def __init__(self, lookup=lookup, timeout=TIMEOUT):
@@ -431,16 +433,20 @@ class Catalogs:
             return self.down[service]
         if self.last is not None:
             time.sleep(max(0.0, self.last + MIN_INTERVAL - time.monotonic()))
-        try:
-            return _call_with_deadline(self.lookup, (service, query), self.timeout)
-        except Exception as exc:
-            error = ServiceError(f"{service}: {_describe(exc)}")
-            # requests' errors are OSErrors; its JSON decoding error is also a ValueError
-            if isinstance(exc, OSError) and not isinstance(exc, ValueError):
-                self.down[service] = error
-            return error
-        finally:
-            self.last = time.monotonic()
+        for attempt in (1, 2):
+            try:
+                return _call_with_deadline(self.lookup, (service, query), self.timeout)
+            except Exception as exc:
+                error = ServiceError(f"{service}: {_describe(exc)}")
+                # requests' errors are OSErrors; its JSON decoding error is also a ValueError
+                if not isinstance(exc, OSError) or isinstance(exc, ValueError):
+                    return error                # a malformed answer: not retried
+                if attempt == 1:
+                    time.sleep(RETRY_DELAY)     # a blip: try once more
+            finally:
+                self.last = time.monotonic()
+        self.down[service] = error
+        return error
 
 
 # ---------------------------------------------------------------- verdicts

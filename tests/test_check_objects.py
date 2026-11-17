@@ -38,6 +38,7 @@ def no_network(monkeypatch):
 @pytest.fixture(autouse=True)
 def no_pause_between_lookups(monkeypatch):
     monkeypatch.setattr(co, "MIN_INTERVAL", 0)
+    monkeypatch.setattr(co, "RETRY_DELAY", 0)
 
 
 def test_network_is_blocked(no_network):
@@ -667,7 +668,7 @@ def test_transport_failure_marks_the_service_down_for_the_run(error):
     for query in ("a", "b"):
         with pytest.raises(co.ServiceError, match=f"^Sesame at CDS: {type(error).__name__}: "):
             cats.ask("Sesame at CDS", query)
-    assert calls == ["a"]
+    assert calls == ["a", "a"]       # one retry, then the service is down for the run
 
 
 @pytest.mark.parametrize("error", [
@@ -726,7 +727,7 @@ def test_a_lookup_that_hangs_is_a_timeout_and_the_service_is_down():
     with pytest.raises(co.ServiceError):
         cats.ask("MAST", "b")
     assert time.monotonic() - start < 2
-    assert calls == ["a"]
+    assert calls == ["a", "a"]
 
 
 def test_default_lookups_route_to_the_wrappers(monkeypatch):
@@ -952,7 +953,7 @@ def test_failures_are_remembered_too():
 
 
 def test_failed_service_is_not_asked_again_in_the_run():
-    # an outage costs one timeout, not one per name; the run relies on the other sources
+    # an outage costs one try and one retry, not one per name; the run relies on the other sources
     lookup = FakeLookup({
         (CDS, "ey-uma"): requests.Timeout("timed out"),
         (CFA, "ey-uma"): NOT_FOUND,
@@ -961,7 +962,7 @@ def test_failed_service_is_not_asked_again_in_the_run():
     v = check("ey-uma", EY_UMA, lookup)
     assert v.status == "confirmed"
     assert (CDS, "ey uma") not in lookup.calls
-    assert len(lookup.calls) == 3
+    assert lookup.calls == [(CDS, "ey-uma"), (CDS, "ey-uma"), (CFA, "ey-uma"), (CFA, "ey uma")]
 
 
 def test_malformed_answer_fails_only_that_question():
@@ -1854,3 +1855,29 @@ def test_unreachable_with_a_mismatch_leads_with_the_offset():
 def test_requirements_txt_at_the_root_is_not_a_plan_file():
     changes = co.classify_changed_paths(["requirements.txt", "ey_uma.txt"])
     assert [f.path for f in changes.findings] == ["ey_uma.txt"]
+
+
+def test_transport_failure_is_retried_once_and_a_good_second_answer_is_used():
+    calls = []
+
+    def lookup(service, query):
+        calls.append(query)
+        if len(calls) == 1:
+            raise requests.ConnectionError("reset")
+        return TIC_ANSWER if query == "a" else []
+    cats = co.Catalogs(lookup)
+    assert cats.ask("MAST", "a") == TIC_ANSWER
+    assert calls == ["a", "a"]
+    assert cats.ask("MAST", "b") == []          # the service was not marked down
+    assert calls == ["a", "a", "b"]
+
+
+def test_malformed_answer_is_not_retried():
+    calls = []
+
+    def lookup(service, query):
+        calls.append(query)
+        raise co.ServiceError("answer was not a Sesame XML document")
+    with pytest.raises(co.ServiceError):
+        co.Catalogs(lookup).ask("Sesame at CDS", "a")
+    assert calls == ["a"]
