@@ -55,3 +55,9 @@ def test_failed_lookup_is_reported():
 
     [(number, message)] = problems("xyzzy\t09:02:20.8\t+49:49:09.3\n", lookup)
     assert "unknown object" in message
+
+
+def test_one_tab_line_is_reported_not_raised():
+    [(number, message)] = problems("M31\t00:42:44.3 +41:16:09\n", lambda name: EY_UMA)
+    assert number == 1
+    assert "cannot read the coordinates" in message and "TABs" in message

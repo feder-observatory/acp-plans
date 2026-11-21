@@ -1,11 +1,9 @@
-# Check the folder name and the plan chaining of every top-level plan folder
-# changed by a push or pull request.
+# Check the folder name, plan chaining and target coordinates of every plan
+# folder changed by a pull request.
 
 name: Check ACP chaining
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -14,97 +12,34 @@ permissions:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v7
-      with:
-        # Full history, so the base commit is available to git diff.
-        fetch-depth: 0
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v7
-      with:
-        python-version: "3.11"
-    - name: Check changed plan folders
-      env:
-        EVENT_NAME: ${{ github.event_name }}
-        PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        PUSH_BEFORE_SHA: ${{ github.event.before }}
-      run: |
-        set -uo pipefail
-
-        if [ "$EVENT_NAME" = "pull_request" ]; then
-          base="$PR_BASE_SHA"
-        else
-          base="$PUSH_BEFORE_SHA"
-        fi
-        # A push that creates a branch has an all-zero "before"; fall back to
-        # the parent commit if the base is missing or unknown.
-        if [ -z "$base" ] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
-          echo "Base commit '$base' not available; comparing with HEAD~1."
-          base="HEAD~1"
-        fi
-
-        # Collect the distinct top-level folders touched by the change.
-        # NUL-delimited so that any character in a name is safe.
-        changed=$(mktemp)
-        if ! git diff --name-only -z "$base" HEAD -- > "$changed"; then
-          echo "git diff against '$base' failed."
-          exit 1
-        fi
-        folders=()
-        while IFS= read -r -d '' path; do
-          case "$path" in
-            */*) top="${path%%/*}" ;;
-            *) continue ;;  # file at the repo root: not a plan folder
-          esac
-          case "$top" in
-            .github|tests) continue ;;
-          esac
-          seen=0
-          for f in ${folders[@]+"${folders[@]}"}; do
-            if [ "$f" = "$top" ]; then seen=1; break; fi
-          done
-          [ "$seen" -eq 1 ] || folders+=("$top")
-        done < "$changed"
-
-        failed=()
-        for folder in ${folders[@]+"${folders[@]}"}; do
-          if [ ! -d "$folder" ]; then
-            printf 'Skipping deleted folder: %s\n' "$folder"
-            continue
-          fi
-          printf 'Checking %s\n' "$folder"
-          ok=1
-          python check_folder_names.py -- "$folder" || ok=0
-          python plan_check.py -- "$folder" || ok=0
-          [ "$ok" -eq 1 ] || failed+=("$folder")
-        done
-
-        if [ "${#folders[@]}" -eq 0 ]; then
-          echo "No plan folders changed."
-        fi
-        if [ "${#failed[@]}" -gt 0 ]; then
-          echo "Checks failed for:"
-          printf '  %s\n' "${failed[@]}"
-          exit 1
-        fi
-
-  check-coordinates:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
       with:
-        fetch-depth: 0
+        fetch-depth: 2   # HEAD is the PR merged into main; HEAD^ is main
     - uses: actions/setup-python@v7
       with:
         python-version: "3.13"
     - run: pip install astropy astroquery
-    - name: Check target coordinates in added or changed plans
-      env:
-        BASE: ${{ github.event.pull_request.base.sha }}
+    - name: No plan files at the top of the repository
       run: |
-        git diff -z --name-only --diff-filter=AM "$BASE"... -- '20*/*.txt' \
+        root=$(git diff --name-only --diff-filter=AM HEAD^ -- ':(glob)*.txt')
+        if [ -n "$root" ]; then
+          echo "Put plan files in a YYYY-MM-DD folder, not at the top of the repository: $root"
+          exit 1
+        fi
+    - name: Check folder names and plan chaining
+      if: success() || failure()
+      run: |
+        git -c core.quotePath=false diff --name-only --no-renames HEAD^ -- '*/*' ':!.github' ':!tests' \
+          | cut -d/ -f1 | sort -u | while IFS= read -r folder; do
+          [ -d "$folder" ] || continue   # folder deleted by the PR
+          echo "Checking $folder"
+          python check_folder_names.py -- "$folder"
+          python plan_check.py -- "$folder"
+        done
+    - name: Check target coordinates
+      if: success() || failure()   # report coordinates even if chaining failed
+      run: |
+        git diff -z --name-only --no-renames --diff-filter=AM HEAD^ -- '20*/*.txt' \
           | xargs -0 python check_coordinates.py

@@ -23,30 +23,26 @@ def targets(text):
         if line.startswith(";"):
             excused = excused or "coords-ok" in line
         elif "\t" in line and not line.startswith("#"):
-            name, ra, dec = (field.strip() for field in line.split("\t")[:3])
+            name, ra, dec = (field.strip() for field in (line.split("\t") + ["", ""])[:3])
             if not excused and not name.upper().startswith("MP "):
                 yield number, name, ra, dec
             excused = False
 
 
 def catalog_position(name):
-    """Look the name up: TIC at MAST, Gaia DR3 at ESA, anything else via Sesame."""
+    """Look the name up: TIC at MAST, anything else (Gaia DR3 included) via Sesame."""
     if match := re.fullmatch(r"TIC[ _-]?(\d+)(\.\d+)?", name, re.IGNORECASE):
         from astroquery.mast import Catalogs
-        row = Catalogs.query_criteria(catalog="Tic", ID=match[1])[0]
+        rows = Catalogs.query_criteria(catalog="Tic", ID=match[1])
+        if not rows:
+            raise LookupError("not in the TIC")
+        row = rows[0]
         return SkyCoord(row["ra"], row["dec"], unit="deg")
-    if match := re.fullmatch(r"Gaia[ _-]?DR3[ _-]?(\d+)", name, re.IGNORECASE):
-        from astroquery.gaia import Gaia
-        row = Gaia.launch_job("SELECT ra, dec FROM gaiadr3.gaia_source "
-                              f"WHERE source_id = {match[1]}").get_results()[0]
-        return SkyCoord(row["ra"], row["dec"], unit="deg")
-    spellings = [name, name.replace("_", " "), re.sub("[_-]", " ", name)]
-    for spelling in dict.fromkeys(spellings):       # each spelling once, in order
-        try:
-            return SkyCoord.from_name(spelling)
-        except Exception as exc:
-            error = exc
-    raise error
+    name = re.sub(r"Gaia[ _-]?DR3[ _-]?", "Gaia DR3 ", name, flags=re.IGNORECASE)
+    try:
+        return SkyCoord.from_name(name)
+    except Exception:
+        return SkyCoord.from_name(re.sub("[_-]", " ", name))
 
 
 def problems(text, lookup=catalog_position):
@@ -55,7 +51,8 @@ def problems(text, lookup=catalog_position):
         try:
             plan = SkyCoord(ra, dec, unit=(u.hourangle, u.deg))
         except Exception:
-            yield number, f"{name}: cannot read the coordinates {ra} {dec}"
+            yield number, (f"{name}: cannot read the coordinates {ra} {dec} "
+                           "(separate name, RA and Dec with TABs)")
             continue
         try:
             catalog = lookup(name)
