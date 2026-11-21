@@ -16,4 +16,4 @@
 NGC 7790	23:58:24.2	61:12:30
 
 #quitat 06:00
-#chain ey_uma.txt
+#chain ey_uma_b.txt

@@ -1,0 +1,26 @@
+; TEST PLAN - never observe this. Each target below is a deliberate test of check_coordinates.py.
+#autofocus
+#repeat 1
+#filter rp
+#binning 1
+#interval 60
+#count 1
+; correct: should pass
+NGC 7331	22:37:04.05	34:24:56.8
+; Sesame name, RA wrong by one hour
+M 31	01:42:44.3	+41:16:09
+; TIC, Dec wrong by one degree
+TIC_408643099.01	02:23:38.67	+16:28:58.90
+; Gaia DR3, Dec wrong by one degree
+Gaia-DR3-1016132190708213504	09:06:48	+51:00:16
+; name no catalog knows
+xyzzy-q7	12:00:00	+10:00:00
+; TIC number that does not exist
+TIC 9999999999	01:00:00	+02:00:00
+; space instead of the second TAB
+M 31	00:42:44.3 +41:16:09
+; RA typo
+NGC 7790	23:58:244	61:12:30
+; coords-ok: made-up field, should be skipped
+my-field-1	10:00:00	+20:00:00
+#chain calibration.txt
