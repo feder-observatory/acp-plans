@@ -1,11 +1,9 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# Check the folder name, plan chaining and target coordinates of every plan
+# folder changed by a pull request.
 
 name: Check ACP chaining
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -14,27 +12,34 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v3
+    - uses: actions/checkout@v7
       with:
-        python-version: "3.11"
-    - name: Check for changed files
-      id: new-folders
-      uses: tj-actions/changed-files@v36
+        fetch-depth: 2   # HEAD is the PR merged into main; HEAD^ is main
+    - uses: actions/setup-python@v7
       with:
-        dir_names: "true"
-        files_ignore: |
-          *.py
-          .github/workflows/*.yml
-    - name: Test with pytest
+        python-version: "3.13"
+    - run: pip install astropy astroquery
+    - name: No plan files at the top of the repository
       run: |
-        for file in ${{ steps.new-folders.outputs.all_changed_files }}; do
-          echo "$file was changed"
-          python check_folder_names.py $file
-          python plan_check.py $file
+        root=$(git diff --name-only --diff-filter=AM HEAD^ -- ':(glob)*.txt')
+        if [ -n "$root" ]; then
+          echo "Put plan files in a YYYY-MM-DD folder, not at the top of the repository: $root"
+          exit 1
+        fi
+    - name: Check folder names and plan chaining
+      if: success() || failure()
+      run: |
+        git -c core.quotePath=false diff --name-only --no-renames HEAD^ -- '*/*' ':!.github' ':!tests' \
+          | cut -d/ -f1 | sort -u | while IFS= read -r folder; do
+          [ -d "$folder" ] || continue   # folder deleted by the PR
+          echo "Checking $folder"
+          python check_folder_names.py -- "$folder"
+          python plan_check.py -- "$folder"
         done
+    - name: Check target coordinates
+      if: success() || failure()   # report coordinates even if chaining failed
+      run: |
+        git diff -z --name-only --no-renames --diff-filter=AM HEAD^ -- '20*/*.txt' \
+          | xargs -0 python check_coordinates.py

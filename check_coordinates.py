@@ -1,0 +1,79 @@
+"""Check that the target coordinates in ACP plan files roughly match a catalog.
+
+Usage: python check_coordinates.py PLAN.txt [PLAN.txt ...]
+
+A target line is "name<TAB>ra<TAB>dec". To accept a target the catalogs do
+not know (or a deliberate offset), put a comment containing "coords-ok"
+somewhere between the previous target and this one.
+"""
+import os
+import re
+import sys
+
+import astropy.units as u
+from astropy.coordinates import SkyCoord
+
+TOLERANCE = 2 * u.arcmin
+
+
+def targets(text):
+    """Yield (line number, name, ra, dec) for each target line to be checked."""
+    excused = False
+    for number, line in enumerate(text.splitlines(), start=1):
+        if line.startswith(";"):
+            excused = excused or "coords-ok" in line
+        elif "\t" in line and not line.startswith("#"):
+            name, ra, dec = (field.strip() for field in (line.split("\t") + ["", ""])[:3])
+            if not excused and not name.upper().startswith("MP "):
+                yield number, name, ra, dec
+            excused = False
+
+
+def catalog_position(name):
+    """Look the name up: TIC at MAST, anything else (Gaia DR3 included) via Sesame."""
+    if match := re.fullmatch(r"TIC[ _-]?(\d+)(\.\d+)?", name, re.IGNORECASE):
+        from astroquery.mast import Catalogs
+        rows = Catalogs.query_criteria(catalog="Tic", ID=match[1])
+        if not rows:
+            raise LookupError("not in the TIC")
+        row = rows[0]
+        return SkyCoord(row["ra"], row["dec"], unit="deg")
+    name = re.sub(r"Gaia[ _-]?DR3[ _-]?", "Gaia DR3 ", name, flags=re.IGNORECASE)
+    try:
+        return SkyCoord.from_name(name)
+    except Exception:
+        return SkyCoord.from_name(re.sub("[_-]", " ", name))
+
+
+def problems(text, lookup=catalog_position):
+    """Yield (line number, message) for each target that does not check out."""
+    for number, name, ra, dec in targets(text):
+        try:
+            plan = SkyCoord(ra, dec, unit=(u.hourangle, u.deg))
+        except Exception:
+            yield number, (f"{name}: cannot read the coordinates {ra} {dec} "
+                           "(separate name, RA and Dec with TABs)")
+            continue
+        try:
+            catalog = lookup(name)
+        except Exception as exc:
+            yield number, f"{name}: no catalog position ({exc})"
+            continue
+        separation = plan.separation(catalog)
+        if separation > TOLERANCE:
+            yield number, (f"{name}: the plan has {ra} {dec}, but the catalog has "
+                           f"{catalog.to_string('hmsdms', sep=':', precision=1)}, "
+                           f"{separation.to(u.arcmin):.1f} away")
+
+
+if __name__ == "__main__":
+    messages = []
+    for path in sys.argv[1:]:
+        with open(path, encoding="utf-8-sig") as plan_file:
+            for number, message in problems(plan_file.read()):
+                messages.append(f"{path}:{number}: {message}")
+                print(messages[-1], flush=True)
+    if messages and "GITHUB_STEP_SUMMARY" in os.environ:    # shown on the run's Summary tab
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+            summary.write("### Coordinate problems\n\n" + "".join(f"- `{m}`\n" for m in messages))
+    sys.exit(bool(messages))
