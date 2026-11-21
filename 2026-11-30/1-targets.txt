@@ -23,4 +23,4 @@ M 31	00:42:44.3 +41:16:09
 NGC 7790	23:58:244	61:12:30
 ; coords-ok: made-up field, should be skipped
 my-field-1	10:00:00	+20:00:00
-#chain calibration.txt
+#chain missing_plan.txt
