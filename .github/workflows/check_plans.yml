@@ -30,6 +30,7 @@ jobs:
         fi
     - name: Check folder names and plan chaining
       if: success() || failure()
+      shell: bash   # adds pipefail, so a failing git diff fails the step
       run: |
         git -c core.quotePath=false diff --name-only --no-renames HEAD^ -- '*/*' ':!.github' ':!tests' \
           | cut -d/ -f1 | sort -u | while IFS= read -r folder; do
@@ -40,6 +41,7 @@ jobs:
         done
     - name: Check target coordinates
       if: success() || failure()   # report coordinates even if chaining failed
+      shell: bash
       run: |
         git diff -z --name-only --no-renames --diff-filter=AM HEAD^ -- '20*/*.txt' \
           | xargs -0 python check_coordinates.py
