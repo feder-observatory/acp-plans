@@ -64,9 +64,10 @@ def read_object_list(path=OBJECT_LIST):
         positions = SkyCoord(rows["ra"], rows["dec"], unit=(u.hourangle, u.deg))
     except Exception as exc:
         raise ValueError(f"cannot read the coordinates: {exc}") from None
-    first, second, separation, _ = positions.search_around_sky(positions, MATCH_RADIUS)
-    close = [f"{names[i]} and {names[j]} ({sep.to(u.arcmin):.1f})"
-             for i, j, sep in zip(first, second, separation) if i < j]
+    close = [f"{names[j]} and {names[i]} ({separation.to(u.arcmin):.1f})"
+             for i in range(len(names))
+             for j, separation in enumerate(positions[i].separation(positions[:i]))
+             if separation < MATCH_RADIUS]
     if close:
         raise ValueError(f"rows less than {MATCH_RADIUS:.0f} apart: " + "; ".join(close))
     return names, positions
