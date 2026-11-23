@@ -20,8 +20,11 @@ jobs:
     - uses: actions/setup-python@v7
       with:
         python-version: "3.13"
-    - run: pip install astropy astroquery
+    - run: pip install astropy astroquery pytest
+    - name: Unit tests
+      run: python -m pytest tests -q
     - name: No plan files at the top of the repository
+      if: success() || failure()   # run even if the unit tests failed
       run: |
         root=$(git diff --name-only --diff-filter=AM HEAD^ -- ':(glob)*.txt')
         if [ -n "$root" ]; then
@@ -43,7 +46,18 @@ jobs:
       if: success() || failure()   # report coordinates even if chaining failed
       shell: bash
       # With no plan files changed xargs still runs the script once, which
-      # checks feder_object_list.csv on its own.
+      # checks feder_object_list.csv on its own. A pull request that changes the
+      # list also checks every plan dated yesterday (UTC) or later, so removing
+      # or moving a row that an upcoming plan relies on is caught.
       run: |
-        git diff -z --name-only --no-renames --diff-filter=AM HEAD^ -- '20*/*.txt' \
-          | xargs -0 python check_coordinates.py
+        {
+          git diff -z --name-only --no-renames --diff-filter=AM HEAD^ -- '20*/*.txt'
+          if ! git diff --quiet HEAD^ -- feder_object_list.csv; then
+            since=$(date -u -d yesterday +%F)
+            for folder in 20*/; do
+              if [[ ! "${folder:0:10}" < "$since" ]]; then
+                find "$folder" -maxdepth 1 -name '*.txt' -print0
+              fi
+            done
+          fi
+        } | sed -z 's|//*|/|g' | sort -zu | xargs -0 python check_coordinates.py
