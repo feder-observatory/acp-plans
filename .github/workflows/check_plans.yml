@@ -1,5 +1,5 @@
 # Check the folder name, plan chaining and target coordinates of every plan
-# folder changed by a pull request.
+# folder changed by a pull request, and that every target is in the object list.
 
 name: Check ACP chaining
 
@@ -39,9 +39,11 @@ jobs:
           python check_folder_names.py -- "$folder"
           python plan_check.py -- "$folder"
         done
-    - name: Check target coordinates
+    - name: Check target coordinates and the object list
       if: success() || failure()   # report coordinates even if chaining failed
       shell: bash
+      # With no plan files changed xargs still runs the script once, which
+      # checks feder_object_list.csv on its own.
       run: |
         git diff -z --name-only --no-renames --diff-filter=AM HEAD^ -- '20*/*.txt' \
           | xargs -0 python check_coordinates.py
